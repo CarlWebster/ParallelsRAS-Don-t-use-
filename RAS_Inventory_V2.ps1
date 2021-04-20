@@ -3,9 +3,9 @@
 
 <#
 .SYNOPSIS
-	Creates a complete inventory of Parallels Remote Application Server.
+	Creates a complete inventory of a V18 Parallels Remote Application Server.
 .DESCRIPTION
-	Creates a complete inventory of Parallels Remote Application Server (RAS) using 
+	Creates a complete inventory of a V18 Parallels Remote Application Server (RAS) using 
 	Microsoft PowerShell, Word, plain text, or HTML.
 	
 	The script requires at least PowerShell version 3 but runs best in version 5.
@@ -496,6 +496,8 @@ Param(
 #
 #Version 2.00 20-Apr-2021
 #	Added 59 RDS Agent States
+#	Added a message to the error message for the missing RAS module
+#		Added a link to the V2 ReadMe file
 #	Added a parameter, RASSite, allowing the report to contain data for the specified Site
 #	Added additional Notification handlers types
 #	Added FSLogix to Farm/Site/Settings/Features
@@ -539,6 +541,7 @@ Param(
 #	Removed MaxGuests from Provider/Agent Settings
 #	Removed property EnableCPULB from Load Balancing section
 #	Removed UPD settings from RD Session Hosts properties and Groups properties
+#	Reorder Parameters in an order recommended by Guy Leech
 #	Reworked how the script processed a Farm with multiple Sites
 #		For most of the Get-RAS* cmdlets, where needed, added the -Site parameter
 #	Updated Function SetWordCellFormat to the latest version
@@ -3548,7 +3551,11 @@ Function ProcessScriptSetup
 		`n`n
 		The RASAdmin module could not be loaded.
 		`n`n
+		Are you running this script against a V18 RAS server?
+		`n`n
 		Please see the Prerequisites section in the ReadMe file (RAS_Inventory_V2_ReadMe.rtf).
+		`n`n
+		https://carlwebster.sharefile.com/d-sa796d75a5fa74f84b0c6a35fa0ea7a4b
 		`n`n
 		Script cannot continue.
 		`n`n
