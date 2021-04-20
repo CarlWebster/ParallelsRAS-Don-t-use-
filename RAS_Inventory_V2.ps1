@@ -13,7 +13,7 @@
 	Word is NOT needed to run the script. This script outputs in Text and HTML.
 	The default output format is HTML.
 	
-	Creates an output file named RASInventory.<fileextension>.
+	Creates an output file named Parallels_RAS.<fileextension>.
 	
 	You do NOT have to run this script on a server running RAS. This script was developed 
 	and run from a Windows 10 VM.
