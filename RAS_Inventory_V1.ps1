@@ -3,9 +3,9 @@
 
 <#
 .SYNOPSIS
-	Creates a complete inventory of Parallels Remote Application Server.
+	Creates a complete inventory of a V17 Parallels Remote Application Server.
 .DESCRIPTION
-	Creates a complete inventory of Parallels Remote Application Server (RAS) using 
+	Creates a complete inventory of a V17 Parallels Remote Application Server (RAS) using 
 	Microsoft PowerShell, Word, plain text, or HTML.
 	
 	The script requires at least PowerShell version 3 but runs best in version 5.
@@ -13,7 +13,7 @@
 	Word is NOT needed to run the script. This script outputs in Text and HTML.
 	The default output format is HTML.
 	
-	Creates an output file named RASInventory.<fileextension>.
+	Creates an output file named Parallels_RAS.<fileextension>.
 	
 	You do NOT have to run this script on a server running RAS. This script was developed 
 	and run from a Windows 10 VM.
@@ -33,12 +33,59 @@
 		Spanish
 		Swedish
 
+.PARAMETER ServerName
+	Specifies which RAS server to use to run the script against.
+	
+	ServerName can be entered as the NetBIOS name, FQDN, localhost, or IP Address.
+	
+	If entered as localhost, the actual computer name is determined and used.
+	
+	If entered as an IP address, an attempt is made to determine and use the actual 
+	computer name.
+	
+	Default value is LocalHost
+.PARAMETER User
+	Username to use for the connection to the RAS server.
+
+	Default value is contained in $env:username
 .PARAMETER HTML
 	Creates an HTML file with an .html extension.
 	
 	HTML is now the default report format.
 	
 	This parameter is set True if no other output format is selected.
+.PARAMETER Text
+	Creates a formatted text file with a .txt extension.
+	
+	This parameter is disabled by default.
+.PARAMETER Folder
+	Specifies the optional output folder to save the output report. 
+.PARAMETER AddDateTime
+	Adds a date timestamp to the end of the file name.
+	
+	The timestamp is in the format of yyyy-MM-dd_HHmm.
+	June 1, 2022 at 6PM is 2022-06-01_1800.
+	
+	Output filename will be ReportName_2022-06-01_1800.<ext>.
+	
+	This parameter is disabled by default.
+	This parameter has an alias of ADT.
+.PARAMETER Dev
+	Clears errors at the beginning of the script.
+	Outputs all errors to a text file at the end of the script.
+	
+	This is used when the script developer requests more troubleshooting data.
+	The text file is placed in the same folder from where the script is run.
+	
+	This parameter is disabled by default.
+.PARAMETER Log
+	Generates a log file for troubleshooting.
+.PARAMETER ScriptInfo
+	Outputs information about the script to a text file.
+	The text file is placed in the same folder from where the script is run.
+	
+	This parameter is disabled by default.
+	This parameter has an alias of SI.
 .PARAMETER MSWord
 	SaveAs DOCX file
 	
@@ -53,20 +100,6 @@
 	This parameter uses Word's SaveAs PDF capability.
 
 	This parameter is disabled by default.
-.PARAMETER Text
-	Creates a formatted text file with a .txt extension.
-	
-	This parameter is disabled by default.
-.PARAMETER AddDateTime
-	Adds a date timestamp to the end of the file name.
-	
-	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2019 at 6PM is 2021-06-01_1800.
-	
-	Output filename will be ReportName_2021-06-01_1800.<ext>.
-	
-	This parameter is disabled by default.
-	This parameter has an alias of ADT.
 .PARAMETER CompanyAddress
 	Company Address to use for the Cover Page, if the Cover Page has the Address field.
 	
@@ -84,7 +117,7 @@
 	This parameter is only valid with the MSWORD and PDF output parameters.
 	This parameter has an alias of CA.
 .PARAMETER CompanyEmail
-	Company Email to use for the Cover Page, if the Cover Page has the Email field. 
+	Company Email to use for the Cover Page if the Cover Page has the Email field. 
 	
 	The following Cover Pages have an Email field:
 		Facet (Word 2013/2016)
@@ -92,7 +125,7 @@
 	This parameter is only valid with the MSWORD and PDF output parameters.
 	This parameter has an alias of CE.
 .PARAMETER CompanyFax
-	Company Fax to use for the Cover Page, if the Cover Page has the Fax field. 
+	Company Fax to use for the Cover Page if the Cover Page has the Fax field. 
 	
 	The following Cover Pages have a Fax field:
 		Contrast (Word 2010)
@@ -120,7 +153,7 @@
 	This parameter has an alias of CPh.
 .PARAMETER CoverPage
 	What Microsoft Word Cover Page to use.
-	Only Word 2010, 2013 and 2016 are supported.
+	Only Word 2010, 2013, and 2016 are supported.
 	(default cover pages in Word en-US)
 
 	Valid input is:
@@ -166,39 +199,11 @@
 	The default value is Sideline.
 	This parameter has an alias of CP.
 	This parameter is only valid with the MSWORD and PDF output parameters.
-.PARAMETER Dev
-	Clears errors at the beginning of the script.
-	Outputs all errors to a text file at the end of the script.
-	
-	This is used when the script developer requests more troubleshooting data.
-	The text file is placed in the same folder from where the script is run.
-	
-	This parameter is disabled by default.
-.PARAMETER Folder
-	Specifies the optional output folder to save the output report. 
-.PARAMETER From
-	Specifies the username for the From email address.
-	
-	If SmtpServer or To are used, this is a required parameter.
-.PARAMETER Log
-	Generates a log file for troubleshooting.
-.PARAMETER ScriptInfo
-	Outputs information about the script to a text file.
-	The text file is placed in the same folder from where the script is run.
-	
-	This parameter is disabled by default.
-	This parameter has an alias of SI.
-.PARAMETER ServerName
-	Specifies which RAS server to use to run the script against.
-	
-	ServerName can be entered as the NetBIOS name, FQDN, localhost or IP Address.
-	
-	If entered as localhost, the actual computer name is determined and used.
-	
-	If entered as an IP address, an attempt is made to determine and use the actual 
-	computer name.
-	
-	Default value is LocalHost
+.PARAMETER UserName
+	Username to use for the Cover Page and Footer.
+	The default value is contained in $env:username
+	This parameter has an alias of UN.
+	This parameter is only valid with the MSWORD and PDF output parameters.
 .PARAMETER SmtpPort
 	Specifies the SMTP port for the SmtpServer. 
 	The default is 25.
@@ -206,19 +211,14 @@
 	Specifies the optional email server to send the output report(s). 
 	
 	If From or To are used, this is a required parameter.
+.PARAMETER From
+	Specifies the username for the From email address.
+	
+	If SmtpServer or To are used, this is a required parameter.
 .PARAMETER To
 	Specifies the username for the To email address.
 	
 	If SmtpServer or From are used, this is a required parameter.
-.PARAMETER User
-	Username to use for the connection to the RAS server.
-
-	Default value is contained in $env:username
-.PARAMETER UserName
-	Username to use for the Cover Page and Footer.
-	The default value is contained in $env:username
-	This parameter has an alias of UN.
-	This parameter is only valid with the MSWORD and PDF output parameters.
 .PARAMETER UseSSL
 	Specifies whether to use SSL for the SmtpServer.
 	The default is False.
@@ -387,21 +387,40 @@
 
 Param(
 	[parameter(Mandatory=$False)] 
+	[string]$ServerName="LocalHost",
+	
+	[parameter(Mandatory=$False)] 
+	[string]$User=$env:username,
+	
+	[parameter(Mandatory=$False)] 
 	[Switch]$HTML=$False,
 
+	[parameter(Mandatory=$False)] 
+	[Switch]$Text=$False,
+
+	[parameter(Mandatory=$False)] 
+	[string]$Folder="",
+	
+	[parameter(Mandatory=$False)] 
+	[Alias("ADT")]
+	[Switch]$AddDateTime=$False,
+	
+	[parameter(Mandatory=$False)] 
+	[Switch]$Dev=$False,
+	
+	[parameter(Mandatory=$False)] 
+	[Switch]$Log=$False,
+	
+	[parameter(Mandatory=$False)] 
+	[Alias("SI")]
+	[Switch]$ScriptInfo=$False,
+	
 	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Switch]$MSWord=$False,
 
 	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Switch]$PDF=$False,
 
-	[parameter(Mandatory=$False)] 
-	[Switch]$Text=$False,
-
-	[parameter(Mandatory=$False)] 
-	[Alias("ADT")]
-	[Switch]$AddDateTime=$False,
-	
 	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Alias("CA")]
 	[ValidateNotNullOrEmpty()]
@@ -432,25 +451,11 @@ Param(
 	[ValidateNotNullOrEmpty()]
 	[string]$CoverPage="Sideline", 
 
-	[parameter(Mandatory=$False)] 
-	[Switch]$Dev=$False,
-	
-	[parameter(Mandatory=$False)] 
-	[string]$Folder="",
-	
-	[parameter(Mandatory=$False)] 
-	[string]$From="",
+	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
+	[Alias("UN")]
+	[ValidateNotNullOrEmpty()]
+	[string]$UserName=$env:username,
 
-	[parameter(Mandatory=$False)] 
-	[Switch]$Log=$False,
-	
-	[parameter(Mandatory=$False)] 
-	[Alias("SI")]
-	[Switch]$ScriptInfo=$False,
-	
-	[parameter(Mandatory=$False)] 
-	[string]$ServerName="LocalHost",
-	
 	[parameter(Mandatory=$False)] 
 	[int]$SmtpPort=25,
 
@@ -458,12 +463,7 @@ Param(
 	[string]$SmtpServer="",
 
 	[parameter(Mandatory=$False)] 
-	[string]$User=$env:username,
-	
-	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
-	[Alias("UN")]
-	[ValidateNotNullOrEmpty()]
-	[string]$UserName=$env:username,
+	[string]$From="",
 
 	[parameter(Mandatory=$False)] 
 	[string]$To="",
@@ -482,10 +482,13 @@ Param(
 #Version 1.0 released to the community on 5-August-2020
 #
 #Version 1.01 19-Apr-2021
+#	Added a message to the error message for the missing RAS module
+#		Added a link to the V1 ReadMe file
 #	Added the missing License section for published RDSH applications to Text and HTML output
 #	Changed all Write-Verbose statements from Get-Date to Get-Date -Format G as requested by Guy Leech
 #	Changed the font size of Word/PDF tables from 11 to 10 to prevent most word wrapping to multiple lines
 #	Fixed several invalid $Null comparisons
+#	Reorder Parameters in an order recommended by Guy Leech
 #	Updated Function SetWordCellFormat to the latest version
 #	Updated the ReadMe file
 
@@ -3495,7 +3498,13 @@ Function ProcessScriptSetup
 		The PSAdmin module could not be loaded.
 		`n`n
 		`t`t
+		Are you running this script against a V17 RAS server?
+		`n`n
+		`t`t
 		Please see the Prerequisites section in the ReadMe file (RAS_Inventory_V1_ReadMe.rtf).
+		`n`n
+		`t`t
+		https://carlwebster.sharefile.com/d-safd2a2d3b45f401f8b9678f2a1730f42
 		`n`n
 		`t`t
 		Script cannot continue.
