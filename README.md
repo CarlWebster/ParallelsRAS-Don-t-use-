@@ -1,7 +1,7 @@
 # ParallelsRAS
 Parallels Remote Application Server Documentation Script
 
-	Creates a complete inventory of Parallels Remote Application Server (RAS) using 
+	Creates a complete inventory of a V18 Parallels Remote Application Server (RAS) using 
 	Microsoft PowerShell, Word, plain text, or HTML.
 	
 	The script requires at least PowerShell version 3 but runs best in version 5.
@@ -9,7 +9,7 @@ Parallels Remote Application Server Documentation Script
 	Word is NOT needed to run the script. This script will output in Text and HTML.
 	The default output format is HTML.
 	
-	Creates an output file named RASInventory.<fileextension>.
+	Creates an output file named Parallels_RAS.<fileextension>.
 	
 	You do NOT have to run this script on a server running RAS. This script was developed 
 	and run from a Windows 10 VM.
