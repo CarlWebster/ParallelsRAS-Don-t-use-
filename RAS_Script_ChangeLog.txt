@@ -30,6 +30,7 @@
 #		Alternate Names
 #		General
 #			Alternate Names
+#	Added Policies summary
 #	In Certificates/General, moved Expiration date to before Common name
 #	Updated Function GetVDIType with Hypervisor data for ESXi 7.0 and vCenter 7.0
 

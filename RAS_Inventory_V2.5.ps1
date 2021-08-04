@@ -387,7 +387,7 @@
 	NAME: RAS_Inventory_V2.5.ps1
 	VERSION: 2.50
 	AUTHOR: Carl Webster
-	LASTEDIT: August 4, 2021 Update 1
+	LASTEDIT: August 4, 2021 Update 2
 #>
 
 
@@ -511,6 +511,7 @@ Param(
 #		Alternate Names
 #		General
 #			Alternate Names
+#	Added Policies summary
 #	In Certificates/General, moved Expiration date to before Common name
 #	Updated Function GetVDIType with Hypervisor data for ESXi 7.0 and vCenter 7.0
 #
@@ -2510,17 +2511,17 @@ Function AddHTMLTable
 
 	$rowdata = @()
 	$columnHeaders = @("User Name",$htmlsb,$UserName,$htmlwhite)
-	$rowdata += @(,('Save as PDF',$htmlsb,$PDF.ToString(),$htmlwhite))
-	$rowdata += @(,('Save as TEXT',$htmlsb,$TEXT.ToString(),$htmlwhite))
-	$rowdata += @(,('Save as WORD',$htmlsb,$MSWORD.ToString(),$htmlwhite))
-	$rowdata += @(,('Save as HTML',$htmlsb,$HTML.ToString(),$htmlwhite))
-	$rowdata += @(,('Add DateTime',$htmlsb,$AddDateTime.ToString(),$htmlwhite))
-	$rowdata += @(,('Hardware Inventory',$htmlsb,$Hardware.ToString(),$htmlwhite))
-	$rowdata += @(,('Computer Name',$htmlsb,$ComputerName,$htmlwhite))
-	$rowdata += @(,('FileName',$htmlsb,$Script:FileName,$htmlwhite))
-	$rowdata += @(,('OS Detected',$htmlsb,$Script:RunningOS,$htmlwhite))
-	$rowdata += @(,('PSUICulture',$htmlsb,$PSCulture,$htmlwhite))
-	$rowdata += @(,('PoSH version',$htmlsb,$Host.Version.ToString(),$htmlwhite))
+	$rowdata += @(,("Save as PDF',$htmlsb,$PDF.ToString(),$htmlwhite))
+	$rowdata += @(,("Save as TEXT',$htmlsb,$TEXT.ToString(),$htmlwhite))
+	$rowdata += @(,("Save as WORD',$htmlsb,$MSWORD.ToString(),$htmlwhite))
+	$rowdata += @(,("Save as HTML',$htmlsb,$HTML.ToString(),$htmlwhite))
+	$rowdata += @(,("Add DateTime',$htmlsb,$AddDateTime.ToString(),$htmlwhite))
+	$rowdata += @(,("Hardware Inventory',$htmlsb,$Hardware.ToString(),$htmlwhite))
+	$rowdata += @(,("Computer Name',$htmlsb,$ComputerName,$htmlwhite))
+	$rowdata += @(,("FileName',$htmlsb,$Script:FileName,$htmlwhite))
+	$rowdata += @(,("OS Detected',$htmlsb,$Script:RunningOS,$htmlwhite))
+	$rowdata += @(,("PSUICulture',$htmlsb,$PSCulture,$htmlwhite))
+	$rowdata += @(,("PoSH version',$htmlsb,$Host.Version.ToString(),$htmlwhite))
 	FormatHTMLTable "Example of Horizontal AutoFitContents HTML Table" -rowArray $rowdata
 
 	The 'rowArray' paramater is mandatory to build the table, but it is not set as such in the function - if nothing is passed, the table will be empty.
@@ -15297,9 +15298,9 @@ Function OutputSite
 					}
 
 					$columnHeaders = @(
-					'URL',($script:htmlsb),
-					'Text',($script:htmlsb),
-					'Tooltip',($script:htmlsb))
+					"URL",($Script:htmlsb),
+					"Text",($Script:htmlsb),
+					"Tooltip",($Script:htmlsb))
 
 					$msg = "Footer URLs:"
 					$columnWidths = @("150","150","150")
@@ -27277,9 +27278,9 @@ Function OutputPubItemFilters
 			}
 
 			$columnHeaders = @(
-			'User',($Script:htmlsb),
-			'Type',($Script:htmlsb),
-			'SID',($Script:htmlsb))
+			"User",($Script:htmlsb),
+			"Type",($Script:htmlsb),
+			"SID",($Script:htmlsb))
 
 			$msg = "Allow the following Users:"
 			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders
@@ -27312,7 +27313,7 @@ Function OutputPubItemFilters
 			}
 
 			$columnHeaders = @(
-			'Client',($Script:htmlsb))
+			"Client",($Script:htmlsb))
 
 			$msg = "Allow the following Clients:"
 			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders 
@@ -27460,8 +27461,8 @@ Function OutputPubItemFilters
 				}
 
 				$columnHeaders = @(
-				'IPv4 Address From',($Script:htmlsb),
-				'IPv4 Address To',($Script:htmlsb))
+				"IPv4 Address From",($Script:htmlsb),
+				"IPv4 Address To",($Script:htmlsb))
 
 				$msg = "Allow the following IPs:"
 				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders
@@ -27492,8 +27493,8 @@ Function OutputPubItemFilters
 				}
 
 				$columnHeaders = @(
-				'IPv6 Address From',($Script:htmlsb),
-				'IPv6 Address To',($Script:htmlsb))
+				"IPv6 Address From",($Script:htmlsb),
+				"IPv6 Address To",($Script:htmlsb))
 
 				If($PubItem.AllowedIP4s.Count -gt 0)
 				{
@@ -27536,7 +27537,7 @@ Function OutputPubItemFilters
 			}
 
 			$columnHeaders = @(
-			'MAC',($Script:htmlsb))
+			"MAC",($Script:htmlsb))
 
 			$msg = ""
 			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders 
@@ -27570,7 +27571,7 @@ Function OutputPubItemFilters
 			}
 
 			$columnHeaders = @(
-			'Gateways',($Script:htmlsb))
+			"Gateways",($Script:htmlsb))
 
 			$msg = ""
 			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders 
@@ -27939,11 +27940,11 @@ Function OutputUniversalPrintingSettings
 			$Printingobj.PrinterNamePattern,$htmlwhite
 		)
 		$rowdata += @(,(
-			'Printer retention',($Script:htmlsb),
+			"Printer retention",($Script:htmlsb),
 			$Printingobj.PrinterRetention.ToString(),$htmlwhite)
 		)
 		$rowdata += @(,(
-			'Settings are replicated to all Sites',($Script:htmlsb),
+			"Settings are replicated to all Sites",($Script:htmlsb),
 			$Printingobj.ReplicateSettings.ToString(),$htmlwhite)
 		)
 
@@ -28075,9 +28076,9 @@ Function OutputUniversalPrintingSettings
 		}
 		
 		$columnHeaders = @(
-			'Server',($Script:htmlsb),
-			'Type',($Script:htmlsb),
-			'State',($Script:htmlsb)
+			"Server",($Script:htmlsb),
+			"Type",($Script:htmlsb),
+			"State",($Script:htmlsb)
 		)
 
 		$msg = "Servers in site"
@@ -28272,7 +28273,7 @@ Function OutputUniversalPrinterDriversSettings
 			}
 			
 			$columnHeaders = @(
-				'Driver name',($Script:htmlsb)
+				"Driver name",($Script:htmlsb)
 			)
 
 			$msg = ""
@@ -28749,7 +28750,7 @@ Function OutputUniversalScanningSettings
 			$WIAObj.WIANamePattern,$htmlwhite
 		)
 		$rowdata += @(,(
-			'Settings are replicated to all Sites',($Script:htmlsb),
+			"Settings are replicated to all Sites",($Script:htmlsb),
 			$WIAobj.ReplicateSettings.ToString(),$htmlwhite)
 		)
 
@@ -28876,9 +28877,9 @@ Function OutputUniversalScanningSettings
 		}
 
 		$columnHeaders = @(
-			'Server',($Script:htmlsb),
-			'Type',($Script:htmlsb),
-			'State',($Script:htmlsb)
+			"Server",($Script:htmlsb),
+			"Type",($Script:htmlsb),
+			"State",($Script:htmlsb)
 		)
 
 		$msg = "Servers in Site"
@@ -28953,7 +28954,7 @@ Function OutputUniversalScanningSettings
 			$TWAINobj.TWAINNamePattern,$htmlwhite
 		)
 		$rowdata += @(,(
-			'Settings are replicated to all Sites',($Script:htmlsb),
+			"Settings are replicated to all Sites",($Script:htmlsb),
 			$TWAINobj.ReplicateSettings.ToString(),$htmlwhite)
 		)
 
@@ -29077,9 +29078,9 @@ Function OutputUniversalScanningSettings
 		}
 		
 		$columnHeaders = @(
-			'Server',($Script:htmlsb),
-			'Type',($Script:htmlsb),
-			'State',($Script:htmlsb)
+			"Server",($Script:htmlsb),
+			"Type",($Script:htmlsb),
+			"State",($Script:htmlsb)
 		)
 
 		$msg = "Servers in Site"
@@ -29388,15 +29389,15 @@ Function OutputRASAuthSettings
 		$columnHeaders = @("Allowed authentication types",($Script:htmlsb),$RASAuthSettingsAuthType,$htmlwhite)
 		If($RASAuthSettings.AllTrustedDomains)
 		{
-			$rowdata += @(,('All Trusted Domains',($Script:htmlsb),"",$htmlwhite))
+			$rowdata += @(,("All Trusted Domains",($Script:htmlsb),"",$htmlwhite))
 		}
 		Else
 		{
-			$rowdata += @(,('Domain',($Script:htmlsb),$RASAuthSettings.Domain,$htmlwhite))
+			$rowdata += @(,("Domain",($Script:htmlsb),$RASAuthSettings.Domain,$htmlwhite))
 		}
-		$rowdata += @(,('Use client domain if specified',($Script:htmlsb),$RASAuthSettings.UseClientDomain.ToString(),$htmlwhite))
-		$rowdata += @(,('Force clients to use NetBIOS credentials',($Script:htmlsb),$RASAuthSettings.ForceNetBIOSCreds.ToString(),$htmlwhite))
-		$rowdata += @(,('Settings are replicated to all Sites',($Script:htmlsb),$RASAuthSettings.ReplicateSettings.ToString(),$htmlwhite))
+		$rowdata += @(,("Use client domain if specified",($Script:htmlsb),$RASAuthSettings.UseClientDomain.ToString(),$htmlwhite))
+		$rowdata += @(,("Force clients to use NetBIOS credentials",($Script:htmlsb),$RASAuthSettings.ForceNetBIOSCreds.ToString(),$htmlwhite))
+		$rowdata += @(,("Settings are replicated to all Sites",($Script:htmlsb),$RASAuthSettings.ReplicateSettings.ToString(),$htmlwhite))
 
 		$msg = ""
 		$columnWidths = @("300","175")
@@ -29509,10 +29510,10 @@ Function OutputRASSessionSetting
 	{
 		$rowdata = @()
 		$columnHeaders = @("Declare remote session idle after",($Script:htmlsb),$RemoteIdleSessionTimeout,$htmlwhite)
-		$rowdata += @(,('Automatic logoff RAS idle session after',($Script:htmlsb),$LogoffIdleSessionTimeout,$htmlwhite))
-		$rowdata += @(,('Cached Session Timeout',($Script:htmlsb),$CachedSessionTimeout,$htmlwhite))
-		$rowdata += @(,('FIPS 140-2 encryption',($Script:htmlsb),$RASSessionSettings.FIPSMode.ToString(),$htmlwhite))
-		$rowdata += @(,('Settings are replicated to all Sites',($Script:htmlsb),$RASSessionSettings.ReplicateSettings.ToString(),$htmlwhite))
+		$rowdata += @(,("Automatic logoff RAS idle session after",($Script:htmlsb),$LogoffIdleSessionTimeout,$htmlwhite))
+		$rowdata += @(,("Cached Session Timeout",($Script:htmlsb),$CachedSessionTimeout,$htmlwhite))
+		$rowdata += @(,("FIPS 140-2 encryption",($Script:htmlsb),$RASSessionSettings.FIPSMode.ToString(),$htmlwhite))
+		$rowdata += @(,("Settings are replicated to all Sites",($Script:htmlsb),$RASSessionSettings.ReplicateSettings.ToString(),$htmlwhite))
 
 		$msg = ""
 		$columnWidths = @("300","175")
@@ -30337,9 +30338,9 @@ Function OutputRASAllowedDevicesSetting
 		$rowdata += @(,($RASAllowedDevices.AllowClient2XOS,$htmlwhite,"2X OS client",$htmlwhite,$RASAllowedDevices.MinBuild2XOS,$htmlwhite))
 		
 		$columnHeaders = @(
-		'Enabled',($Script:htmlsb),
-		'Clients',($Script:htmlsb),
-		'Minimum build',($Script:htmlsb))
+		"Enabled",($Script:htmlsb),
+		"Clients",($Script:htmlsb),
+		"Minimum build",($Script:htmlsb))
 
 		$msg = ""
 		$columnWidths = @("54","125","100")
@@ -30353,6 +30354,165 @@ Function OutputRASAllowedDevicesSetting
 		$columnWidths = @("183","100")
 		FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
 		WriteHTMLLine 0 0 ""
+	}
+}
+#endregion
+
+#region process policies
+Function ProcessPolicies
+{
+	Write-Verbose "$(Get-Date -Format G): Processing Policies"
+	
+	OutputPoliciesSectionPage
+	
+	Write-Verbose "$(Get-Date -Format G): `tProcessing Policies Summary"
+	
+	$Policies = Get-RASClientPolicy -EA 0 4>$Null
+	
+	If(!($?))
+	{
+		Write-Warning "
+		`n
+		Unable to retrieve Policies information
+		"
+		If($MSWord -or $PDF)
+		{
+			WriteWordLine 0 0 "Unable to retrieve Policies information"
+		}
+		If($Text)
+		{
+			Line 0 "Unable to retrieve Policies information"
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 0 0 "Unable to retrieve Policies information"
+		}
+	}
+	ElseIf($? -and $null -eq $Policies)
+	{
+		Write-Host "
+		No Policies information was found
+		" -ForegroundColor White
+		If($MSWord -or $PDF)
+		{
+			WriteWordLine 0 0 "No Policies information was found"
+		}
+		If($Text)
+		{
+			Line 0 "No Policies information was found"
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 0 0 "No Policies information was found"
+		}
+	}
+	Else
+	{
+		OutputPoliciesSummary $Policies
+	}
+
+}
+
+Function OutputPoliciesSectionPage
+{
+	If($MSWord -or $PDF)
+	{
+		$Script:Selection.InsertNewPage()
+		WriteWordLine 1 0 "Policies"
+	}
+	If($Text)
+	{
+		Line 0 "Policies"
+	}
+	If($HTML)
+	{
+		WriteHTMLLine 1 0 "Policies"
+	}
+}
+
+Function OutputPoliciesSummary
+{
+	Param([object] $Policies)
+	
+	Write-Verbose "$(Get-Date -Format G): `t`tOutput Policies Summary"
+	
+	If($MSWord -or $PDF)
+	{
+		WriteWordLine 2 0 "Policies"
+	}
+	If($Text)
+	{
+		Line 1 "Policies"
+	}
+	If($HTML)
+	{
+		WriteHTMLLine 2 0 "Policies"
+	}
+	
+	ForEach($Policy in $Policies)
+	{
+		If($MSWord -or $PDF)
+		{
+			$ScriptInformation = New-Object System.Collections.ArrayList
+			$ScriptInformation.Add(@{Data = "Name"; Value = $Policy.Name; }) > $Null
+			$ScriptInformation.Add(@{Data = "Version"; Value = $Policy.Version; }) > $Null
+			$ScriptInformation.Add(@{Data = "Category"; Value = ""; }) > $Null
+			$ScriptInformation.Add(@{Data = "Description"; Value = $Policy.Description; }) > $Null
+			$ScriptInformation.Add(@{Data = "Last modification by"; Value = $Policy.AdminLastMod; }) > $Null
+			$ScriptInformation.Add(@{Data = "Modified on"; Value = $Policy.TimeLastMod.ToString(); }) > $Null
+			$ScriptInformation.Add(@{Data = "Created by"; Value = $Policy.AdminCreate; }) > $Null
+			$ScriptInformation.Add(@{Data = "Created on"; Value = $Policy.TimeCreate.ToString(); }) > $Null
+			$ScriptInformation.Add(@{Data = "ID"; Value = $Policy.Id; }) > $Null
+
+			$Table = AddWordTable -Hashtable $ScriptInformation `
+			-Columns Data,Value `
+			-List `
+			-Format $wdTableGrid `
+			-AutoFit $wdAutoFitFixed;
+
+			SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+			SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+			$Table.Columns.Item(1).Width = 125;
+			$Table.Columns.Item(2).Width = 175;
+
+			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+			FindWordDocumentEnd
+			$Table = $Null
+			WriteWordLine 0 0 ""
+		}
+		If($Text)
+		{
+			Line 2 "Name`t`t`t: " $Policy.Name
+			Line 2 "Version`t`t`t: " $Policy.Version
+			Line 2 "Category`t`t: " ""
+			Line 2 "Description`t`t: " $Policy.Description
+			Line 2 "Last modification by`t: " $Policy.AdminLastMod
+			Line 2 "Modified on`t`t: " $Policy.TimeLastMod.ToString()
+			Line 2 "Created by`t`t: " $Policy.AdminCreate
+			Line 2 "Created on`t`t: " $Policy.TimeCreate.ToString()
+			Line 2 "ID`t`t`t: " $Policy.Id
+			Line 0 ""
+		}
+		If($HTML)
+		{
+			$rowdata = @()
+			$columnHeaders = @("Name",($Script:htmlsb),$Policy.Name,$htmlwhite)
+			$rowdata += @(,("Version",($Script:htmlsb),$Policy.Version,$htmlwhite))
+			$rowdata += @(,("Category",($Script:htmlsb),"",$htmlwhite))
+			$rowdata += @(,("Description",($Script:htmlsb),$Policy.Description,$htmlwhite))
+			$rowdata += @(,("Last modification by",($Script:htmlsb), $Policy.AdminLastMod,$htmlwhite))
+			$rowdata += @(,("Modified on",($Script:htmlsb), $Policy.TimeLastMod.ToString(),$htmlwhite))
+			$rowdata += @(,("Created by",($Script:htmlsb), $Policy.AdminCreate,$htmlwhite))
+			$rowdata += @(,("Created on",($Script:htmlsb), $Policy.TimeCreate.ToString(),$htmlwhite))
+			$rowdata += @(,("ID",($Script:htmlsb),$Policy.Id,$htmlwhite))
+
+			$msg = ""
+			$columnWidths = @("150","200")
+			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+			WriteHTMLLine 0 0 ""
+		}
 	}
 }
 #endregion
@@ -30619,17 +30779,17 @@ Function OutputRASAccounts
 		{
 			$rowdata = @()
 			$columnHeaders = @("Group or user names",($Script:htmlsb),$RASAccount.Name,$htmlwhite)
-			$rowdata += @(,('Type',($Script:htmlsb),$RASAccountType,$htmlwhite))
-			$rowdata += @(,('Permissions',($Script:htmlsb),$RASAccountPermissions,$htmlwhite))
-			$rowdata += @(,('Receive system notifications',($Script:htmlsb),$RASAccountNotify,$htmlwhite))
-			$rowdata += @(,('Email',($Script:htmlsb),$RASAccount.Email,$htmlwhite))
-			$rowdata += @(,('Mobile',($Script:htmlsb),$RASAccount.Mobile,$htmlwhite))
-			$rowdata += @(,('Group',($Script:htmlsb),$RASAccount.GroupName,$htmlwhite))
+			$rowdata += @(,("Type",($Script:htmlsb),$RASAccountType,$htmlwhite))
+			$rowdata += @(,("Permissions",($Script:htmlsb),$RASAccountPermissions,$htmlwhite))
+			$rowdata += @(,("Receive system notifications",($Script:htmlsb),$RASAccountNotify,$htmlwhite))
+			$rowdata += @(,("Email",($Script:htmlsb),$RASAccount.Email,$htmlwhite))
+			$rowdata += @(,("Mobile",($Script:htmlsb),$RASAccount.Mobile,$htmlwhite))
+			$rowdata += @(,("Group",($Script:htmlsb),$RASAccount.GroupName,$htmlwhite))
 			$rowdata += @(,("Last modification by",($Script:htmlsb), $RASAccount.AdminLastMod,$htmlwhite))
 			$rowdata += @(,("Modified on",($Script:htmlsb), $RASAccount.TimeLastMod.ToString(),$htmlwhite))
 			$rowdata += @(,("Created by",($Script:htmlsb), $RASAccount.AdminCreate,$htmlwhite))
 			$rowdata += @(,("Created on",($Script:htmlsb), $RASAccount.TimeCreate.ToString(),$htmlwhite))
-			$rowdata += @(,('ID',($Script:htmlsb),$RASAccount.Id.ToString(),$htmlwhite))
+			$rowdata += @(,("ID",($Script:htmlsb),$RASAccount.Id.ToString(),$htmlwhite))
 
 			$msg = ""
 			$columnWidths = @("200","175")
@@ -30695,7 +30855,7 @@ Function OutputRASFeatures
 	{
 		$rowdata = @()
 		$columnHeaders = @("Enable Helpdesk functionality in Parallels Client",($Script:htmlsb),$RASFeatures.HelpDeskEnabled.ToString(),$htmlwhite)
-		$rowdata += @(,('Helpdesk email',($Script:htmlsb),$RASFeatures.HelpDeskEmail,$htmlwhite))
+		$rowdata += @(,("Helpdesk email",($Script:htmlsb),$RASFeatures.HelpDeskEmail,$htmlwhite))
 
 		$msg = ""
 		$columnWidths = @("250","175")
@@ -30864,10 +31024,10 @@ Function OutputRASSettings
 		{
 			$rowdata = @()
 			$columnHeaders = @("Manual HTTP proxy configuration",($Script:htmlsb),"",$htmlwhite)
-			$rowdata += @(,('Address',($Script:htmlsb),$RASFeatures.HttpProxyAddress,$htmlwhite))
-			$rowdata += @(,('Port',($Script:htmlsb),$RASFeatures.HttpProxyPort.ToString(),$htmlwhite))
-			$rowdata += @(,('User name',($Script:htmlsb),$RASFeatures.HttpProxyUser,$htmlwhite))
-			$rowdata += @(,('Password',($Script:htmlsb),$RASFeatures.HttpProxyPwd,$htmlwhite))
+			$rowdata += @(,("Address",($Script:htmlsb),$RASFeatures.HttpProxyAddress,$htmlwhite))
+			$rowdata += @(,("Port",($Script:htmlsb),$RASFeatures.HttpProxyPort.ToString(),$htmlwhite))
+			$rowdata += @(,("User name",($Script:htmlsb),$RASFeatures.HttpProxyUser,$htmlwhite))
+			$rowdata += @(,("Password",($Script:htmlsb),$RASFeatures.HttpProxyPwd,$htmlwhite))
 
 			$msg = ""
 			$columnWidths = @("200","175")
@@ -31016,11 +31176,11 @@ Function OutputRASMailboxSettings
 	{
 		$rowdata = @()
 		$columnHeaders = @("Mail server",($Script:htmlsb),$RASMailboxSettings.SMTPServer,$htmlwhite)
-		$rowdata += @(,('TLS/SSL',($Script:htmlsb),$RASMailboxSettingsUseTLS,$htmlwhite))
-		$rowdata += @(,('SMTP server requires authentication',($Script:htmlsb),$RASMailboxSettings.RequireAuth.ToString(),$htmlwhite))
+		$rowdata += @(,("TLS/SSL",($Script:htmlsb),$RASMailboxSettingsUseTLS,$htmlwhite))
+		$rowdata += @(,("SMTP server requires authentication",($Script:htmlsb),$RASMailboxSettings.RequireAuth.ToString(),$htmlwhite))
 		If($RASMailboxSettings.RequireAuth)
 		{
-			$rowdata += @(,('Username',($Script:htmlsb),$RASMailboxSettings.Username,$htmlwhite))
+			$rowdata += @(,("Username",($Script:htmlsb),$RASMailboxSettings.Username,$htmlwhite))
 		}
 
 		$msg = ""
@@ -31298,14 +31458,14 @@ Function OutputRASNotifications
 		{
 			$rowdata = @()
 			$columnHeaders = @("Events",($Script:htmlsb),$RASNotificationText,$htmlwhite)
-			$rowdata += @(,('Enabled',($Script:htmlsb),$RASNotificationHandler.Enabled.ToString(),$htmlwhite))
+			$rowdata += @(,("Enabled",($Script:htmlsb),$RASNotificationHandler.Enabled.ToString(),$htmlwhite))
 			If($RASNotificationHandler.Enabled)
 			{
-				$rowdata += @(,('Send email to RAS administrators',($Script:htmlsb),$RASNotificationHandler.SendEmail.ToString(),$htmlwhite))
+				$rowdata += @(,("Send email to RAS administrators",($Script:htmlsb),$RASNotificationHandler.SendEmail.ToString(),$htmlwhite))
 				
 				If($RASNotificationHandler.Recipients -eq "")
 				{
-					$rowdata += @(,('Handler',($Script:htmlsb),"",$htmlwhite))
+					$rowdata += @(,("Handler",($Script:htmlsb),"",$htmlwhite))
 				}
 				Else
 				{
@@ -31318,16 +31478,16 @@ Function OutputRASNotifications
 						
 						If($cnt -eq 0)
 						{
-							$rowdata += @(,('Handler',($Script:htmlsb),$item,$htmlwhite))
+							$rowdata += @(,("Handler",($Script:htmlsb),$item,$htmlwhite))
 						}
 						Else
 						{
-							$rowdata += @(,('',($Script:htmlsb),$item,$htmlwhite))
+							$rowdata += @(,("",($Script:htmlsb),$item,$htmlwhite))
 						}
 					}
 					$tmpArray = $Null
 				}
-				$rowdata += @(,('Execute a notification script',($Script:htmlsb),$RASNotificationHandler.ExecuteScript.ToString(),$htmlwhite))
+				$rowdata += @(,("Execute a notification script",($Script:htmlsb),$RASNotificationHandler.ExecuteScript.ToString(),$htmlwhite))
 				
 				If($RASNotificationHandler.ExecuteScript)
 				{
@@ -31342,18 +31502,18 @@ Function OutputRASNotifications
 						$ScriptName = $results.Name
 					}
 					
-					$rowdata += @(,('',($Script:htmlsb),$ScriptName,$htmlwhite))
+					$rowdata += @(,("",($Script:htmlsb),$ScriptName,$htmlwhite))
 					$ScriptName = $Null
 				}
 
-				$rowdata += @(,( 'Notification handler grace period',($Script:htmlsb),"$GracePeriod minutes",$htmlwhite))
+				$rowdata += @(,( "Notification handler grace period",($Script:htmlsb),"$GracePeriod minutes",$htmlwhite))
 				If($RASNotificationHandler.EnableInterval)
 				{
-					$rowdata += @(,( 'Notifications interval',($Script:htmlsb),"$NotificationsInterval minutes",$htmlwhite))
+					$rowdata += @(,("Notifications interval",($Script:htmlsb),"$NotificationsInterval minutes",$htmlwhite))
 				}
 				Else
 				{
-					$rowdata += @(,( 'Send one notification and suspend further notifications until recovered',($Script:htmlsb),"",$htmlwhite))
+					$rowdata += @(,("Send one notification and suspend further notifications until recovered",($Script:htmlsb),"",$htmlwhite))
 				}
 			}
 
@@ -31424,10 +31584,10 @@ Function OutputRASNotificationScripts
 		{
 			$rowdata = @()
 			$columnHeaders = @("Script name",($Script:htmlsb),$RASNotificationScript.Name,$htmlwhite)
-			$rowdata += @(,('Command',($Script:htmlsb),$RASNotificationScript.Command,$htmlwhite))
-			$rowdata += @(,('Arguments',($Script:htmlsb),$RASNotificationScript.Arguments,$htmlwhite))
-			$rowdata += @(,('Initial directory',($Script:htmlsb),$RASNotificationScript.InitialDirectory,$htmlwhite))
-			$rowdata += @(,('User name',($Script:htmlsb),$RASNotificationScript.Username,$htmlwhite))
+			$rowdata += @(,("Command",($Script:htmlsb),$RASNotificationScript.Command,$htmlwhite))
+			$rowdata += @(,("Arguments",($Script:htmlsb),$RASNotificationScript.Arguments,$htmlwhite))
+			$rowdata += @(,("Initial directory",($Script:htmlsb),$RASNotificationScript.InitialDirectory,$htmlwhite))
+			$rowdata += @(,("User name",($Script:htmlsb),$RASNotificationScript.Username,$htmlwhite))
 
 			$msg = ""
 			$columnWidths = @("200","225")
@@ -31613,7 +31773,7 @@ Function OutputRASLicense
 		{
 			$rowdata += @(,("Support Expiration Date",($Script:htmlsb),$RASLicense.SupportExpireDate,$htmlwhite))
 		}
-		$rowdata += @(,('Expiration Date',($Script:htmlsb),$RASLicense.ExpiryDate,$htmlwhite))
+		$rowdata += @(,("Expiration Date",($Script:htmlsb),$RASLicense.ExpiryDate,$htmlwhite))
 		If(ValidObject $RASLicense ExpiryDate)
 		{
 			$rowdata += @(,("Expiration Date",($Script:htmlsb),$RASLicense.ExpiryDate,$htmlwhite))
@@ -31622,21 +31782,21 @@ Function OutputRASLicense
 		{
 			$rowdata += @(,("First Activation",($Script:htmlsb),$RASLicense.LicenseFirstActive,$htmlwhite))
 		}
-		$rowdata += @(,('Maximum allowed concurrent users',($Script:htmlsb),$RASLicense.InstalledUsers,$htmlwhite))
-		$rowdata += @(,('Peak Users',($Script:htmlsb),$RASLicense.UsersPeak,$htmlwhite))
-		$rowdata += @(,('Concurrent Users',($Script:htmlsb),$RASLicense.UsersLicenseInfo,$htmlwhite))
+		$rowdata += @(,("Maximum allowed concurrent users",($Script:htmlsb),$RASLicense.InstalledUsers,$htmlwhite))
+		$rowdata += @(,("Peak Users",($Script:htmlsb),$RASLicense.UsersPeak,$htmlwhite))
+		$rowdata += @(,("Concurrent Users",($Script:htmlsb),$RASLicense.UsersLicenseInfo,$htmlwhite))
 		$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
 		If(ValidObject $RASLicense PAUserEmail)
 		{
-			$rowdata += @(,('Parallels Account user email',($Script:htmlsb),$RASLicense.PAUserEmail,$htmlwhite))
+			$rowdata += @(,("Parallels Account user email",($Script:htmlsb),$RASLicense.PAUserEmail,$htmlwhite))
 		}
 		If(ValidObject $RASLicense PAUserName)
 		{
-			$rowdata += @(,('Parallels Account user name',($Script:htmlsb),$RASLicense.PAUserName,$htmlwhite))
+			$rowdata += @(,("Parallels Account user name",($Script:htmlsb),$RASLicense.PAUserName,$htmlwhite))
 		}
 		If(ValidObject $RASLicense PACompanyName)
 		{
-			$rowdata += @(,('Parallels Account company',($Script:htmlsb),$RASLicense.PACompanyName,$htmlwhite))
+			$rowdata += @(,("Parallels Account company",($Script:htmlsb),$RASLicense.PACompanyName,$htmlwhite))
 		}
 
 		$msg = ""
@@ -31680,6 +31840,8 @@ ForEach($Site in $Script:Sites)
 
 	ProcessConnection $Site
 }
+
+ProcessPolicies #new in 18.1
 
 ProcessAdministration
 
