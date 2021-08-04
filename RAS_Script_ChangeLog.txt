@@ -13,6 +13,26 @@
 #Version 1.0 released to the community on 5-August-2020
 #
 
+#Version 2.50
+#	Added a version test so the script only works with RAS 18.1
+#	Added Themes
+#		General
+#		Messages
+#		HTML5 client/Branding
+#		HTML5 client/Language bar
+#		HTML5 client/Messages
+#		HTML5 client/Gateway
+#		HTML5 client/Legal policies
+#		Windows client/Branding
+#		Windows client/Messages
+#		Windows client/Custom menu
+#	Added Certificates
+#		Alternate Names
+#		General
+#			Alternate Names
+#	In Certificates/General, moved Expiration date to before Common name
+#	Updated Function GetVDIType with Hypervisor data for ESXi 7.0 and vCenter 7.0
+
 #Version 2.10 25-Apr-2021
 #	Fixed wrong variables used to determine User Profile technology
 #	For RD Session Hosts properties:
