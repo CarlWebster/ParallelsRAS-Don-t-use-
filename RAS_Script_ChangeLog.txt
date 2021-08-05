@@ -15,6 +15,73 @@
 
 #Version 2.50
 #	Added a version test so the script only works with RAS 18.1
+#	Added Certificates
+#		Alternate Names
+#		General
+#			Alternate Names
+#	Added Policies summary
+#	Added Policy Properties
+#		Policy
+#		Policy/Criteria
+#		Session
+#		Session/Connection
+#		Session/Connection/Primary connection
+#		Session/Connection/Secondary connections
+#		Session/Connection/Reconnection
+#		Session/Connection/Computer name
+#		Session/Connection/Advanced settings
+#		Session/Connection/Web authentication
+#		Session/Connection/Multifactor authentication
+#		Session/Connection/Session prelaunch
+#		Session/Connection/Local proxy address
+#		Session/Display
+#		Session/Display/Settings
+#		Session/Display/Multi-monitor
+#		Session/Display/Published applications
+#		Session/Display/Desktop options
+#		Session/Display/Browser
+#		Session/Printing
+#		Session/Scanning
+#		Session/Audio
+#		Session/Keyboard
+#		Session/Local devices and resources
+#		Session/Local devices and resources/Clipboard
+#		Session/Local devices and resources/Disk drives
+#		Session/Local devices and resources/Devices
+#		Session/Local devices and resources/Video capture devices
+#		Session/Local devices and resources/Ports
+#		Session/Local devices and resources/Smart cards
+#		Session/Local devices and resources/Windows touch input
+#		Session/Local devices and resources/File transfer
+#		Session/Experience
+#		Session/Experience/Performance
+#		Session/Experience/Compression
+#		Session/Network
+#		Session/Server authentication
+#		Session/Advanced settings
+#		Client options
+#		Client options/Connection
+#		Client options/Logging
+#		Client options/Update
+#		Client options/PC keyboard
+#		Client options/Single Sign-On
+#		Client options/Advanced
+#		Client options/Advanced/Global
+#		Client options/Advanced/Language
+#		Client options/Advanced/Printing
+#		Client options/Advanced/Windows client
+#		Client options/Advanced/RemoteFX USB redirection
+#		Control settings
+#		Control settings/Connections
+#		Control settings/Password
+#		Control settings/Import and export
+#		Redirection
+#	Added Reporting
+#		RAS reporting configuration
+#			Session information
+#			Server counters information
+#			Custom reports
+#		RAS Performance Monitor configuration
 #	Added Themes
 #		General
 #		Messages
@@ -26,11 +93,6 @@
 #		Windows client/Branding
 #		Windows client/Messages
 #		Windows client/Custom menu
-#	Added Certificates
-#		Alternate Names
-#		General
-#			Alternate Names
-#	Added Policies summary
 #	In Certificates/General, moved Expiration date to before Common name
 #	Updated Function GetVDIType with Hypervisor data for ESXi 7.0 and vCenter 7.0
 

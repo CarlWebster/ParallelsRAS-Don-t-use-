@@ -387,7 +387,7 @@
 	NAME: RAS_Inventory_V2.5.ps1
 	VERSION: 2.50
 	AUTHOR: Carl Webster
-	LASTEDIT: August 5, 2021 Update 3
+	LASTEDIT: August 5, 2021 Update 5
 #>
 
 
@@ -501,6 +501,62 @@ Param(
 #		General
 #			Alternate Names
 #	Added Policies summary
+#	Added Policy Properties
+#		Policy
+#		Policy/Criteria
+#		Session
+#		Session/Connection
+#		Session/Connection/Primary connection
+#		Session/Connection/Secondary connections
+#		Session/Connection/Reconnection
+#		Session/Connection/Computer name
+#		Session/Connection/Advanced settings
+#		Session/Connection/Web authentication
+#		Session/Connection/Multifactor authentication
+#		Session/Connection/Session prelaunch
+#		Session/Connection/Local proxy address
+#		Session/Display
+#		Session/Display/Settings
+#		Session/Display/Multi-monitor
+#		Session/Display/Published applications
+#		Session/Display/Desktop options
+#		Session/Display/Browser
+#		Session/Printing
+#		Session/Scanning
+#		Session/Audio
+#		Session/Keyboard
+#		Session/Local devices and resources
+#		Session/Local devices and resources/Clipboard
+#		Session/Local devices and resources/Disk drives
+#		Session/Local devices and resources/Devices
+#		Session/Local devices and resources/Video capture devices
+#		Session/Local devices and resources/Ports
+#		Session/Local devices and resources/Smart cards
+#		Session/Local devices and resources/Windows touch input
+#		Session/Local devices and resources/File transfer
+#		Session/Experience
+#		Session/Experience/Performance
+#		Session/Experience/Compression
+#		Session/Network
+#		Session/Server authentication
+#		Session/Advanced settings
+#		Client options
+#		Client options/Connection
+#		Client options/Logging
+#		Client options/Update
+#		Client options/PC keyboard
+#		Client options/Single Sign-On
+#		Client options/Advanced
+#		Client options/Advanced/Global
+#		Client options/Advanced/Language
+#		Client options/Advanced/Printing
+#		Client options/Advanced/Windows client
+#		Client options/Advanced/RemoteFX USB redirection
+#		Control settings
+#		Control settings/Connections
+#		Control settings/Password
+#		Control settings/Import and export
+#		Redirection
 #	Added Reporting
 #		RAS reporting configuration
 #			Session information
@@ -30415,6 +30471,7 @@ Function ProcessPolicies
 	Else
 	{
 		OutputPoliciesSummary $Policies
+		OutputPoliciesDetails $Policies
 	}
 
 }
@@ -30457,12 +30514,109 @@ Function OutputPoliciesSummary
 	
 	ForEach($Policy in $Policies)
 	{
+		$ClientOptions   = $Policy.ClientPolicy.ClientOptions
+		$ControlSettings = $Policy.ClientPolicy.ControlSettings
+		$Redirection     = $Policy.ClientPolicy.Redirection
+		$Session         = $Policy.ClientPolicy.Session
+		$Categories      = @()
+		
+		If($Redirection.Enabled)
+		{
+			$Categories += "Redirection"
+		}
+		
+		If(	
+			$ControlSettings.ControlSettingsConnections.Enabled -or 
+			$ControlSettings.Password.Enabled -or 
+			$ControlSettings.ImportExport.Enabled)
+		{
+			$Categories += "Control settings"
+		}
+		
+		If( 
+			$ClientOptions.Connection.Enabled -or 
+			$ClientOptions.Logging.Enabled -or 
+			$ClientOptions.PCKeyboard.Enabled -or 
+			$ClientOptions.Update.Enabled -or 
+			$ClientOptions.SingleSignOn.Enabled -or 
+			$ClientOptions.Global.Enabled -or 
+			$ClientOptions.Language.Enabled -or 
+			$ClientOptions.Printing.Enabled -or 
+			$ClientOptions.WindowsClient.Enabled -or 
+			$ClientOptions.RemoteFxUsbRedirection.Enabled)
+		{
+			$Categories += "Client options"
+		}
+		
+		If( 
+			$Session.PrimaryConnection.Enabled -or 		
+			$Session.SecondaryConnections.Enabled -or 
+			$Session.Reconnection.Enabled -or 
+			$Session.ComputerName.Enabled -or 
+			$Session.ConnectionAdvancedSettings.Enabled -or 
+			$Session.WebAuthentication.Enabled -or 
+			$Session.MultiFactorAuthentication.Enabled -or 
+			$Session.SessionPreLaunch.Enabled -or 
+			$Session.LocalProxyAddress.Enabled -or 
+			$Session.Settings.Enabled -or 
+			$Session.MultiMonitor.Enabled -or 
+			$Session.PublishedApplications.Enabled -or 	
+			$Session.DesktopOptions.Enabled -or 
+			$Session.Browser.Enabled -or 
+			$Session.Printing.Enabled -or 
+			$Session.Scanning.Enabled -or 
+			$Session.Audio.Enabled -or 
+			$Session.Keyboard.Enabled -or 
+			$Session.Clipboard.Enabled -or 
+			$Session.DiskDrives.Enabled -or 
+			$Session.Devices.Enabled -or 
+			$Session.Ports.Enabled -or 
+			$Session.SmartCards.Enabled -or 
+			$Session.WindowsTouchInput.Enabled -or 
+			$Session.FileTransfer.Enabled -or 
+			$Session.Performance.Enabled -or 
+			$Session.Compression.Enabled -or 
+			$Session.Network.Enabled -or 
+			$Session.AdvancedSettings.Enabled -or 	
+			$Session.ServerAuthentication.Enabled 		
+		)
+		{
+			$Categories += "Session"
+		}
+
 		If($MSWord -or $PDF)
 		{
 			$ScriptInformation = New-Object System.Collections.ArrayList
 			$ScriptInformation.Add(@{Data = "Name"; Value = $Policy.Name; }) > $Null
 			$ScriptInformation.Add(@{Data = "Version"; Value = $Policy.Version; }) > $Null
-			$ScriptInformation.Add(@{Data = "Category"; Value = ""; }) > $Null
+			
+			If($Categories.Count -eq 0)
+			{
+				$ScriptInformation.Add(@{Data = "Category"; Value = ""; }) > $Null
+			}
+			ElseIf($Categories.Count -eq 4)
+			{
+				$ScriptInformation.Add(@{Data = "Category"; Value = "All Categories"; }) > $Null
+			}
+			Else
+			{
+				$cnt=-1
+				
+				ForEach($Category in $Categories)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						$ScriptInformation.Add(@{Data = "Category"; Value = $Category; }) > $Null
+					}
+					Else
+					{
+						$ScriptInformation.Add(@{Data = ""; Value = $Category; }) > $Null
+					}
+				}
+			}
+			
 			$ScriptInformation.Add(@{Data = "Description"; Value = $Policy.Description; }) > $Null
 			$ScriptInformation.Add(@{Data = "Last modification by"; Value = $Policy.AdminLastMod; }) > $Null
 			$ScriptInformation.Add(@{Data = "Modified on"; Value = $Policy.TimeLastMod.ToString(); }) > $Null
@@ -30492,7 +30646,34 @@ Function OutputPoliciesSummary
 		{
 			Line 2 "Name`t`t`t: " $Policy.Name
 			Line 2 "Version`t`t`t: " $Policy.Version
-			Line 2 "Category`t`t: " ""
+			
+			If($Categories.Count -eq 0)
+			{
+				Line 2 "Category`t`t: " ""
+			}
+			ElseIf($Categories.Count -eq 4)
+			{
+				Line 2 "Category`t`t: " "All Categories"
+			}
+			Else
+			{
+				$cnt=-1
+				
+				ForEach($Category in $Categories)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						Line 2 "Category`t`t: " $Category
+					}
+					Else
+					{
+						Line 5 "  " $Category
+					}
+				}
+			}
+			
 			Line 2 "Description`t`t: " $Policy.Description
 			Line 2 "Last modification by`t: " $Policy.AdminLastMod
 			Line 2 "Modified on`t`t: " $Policy.TimeLastMod.ToString()
@@ -30506,7 +30687,34 @@ Function OutputPoliciesSummary
 			$rowdata = @()
 			$columnHeaders = @("Name",($Script:htmlsb),$Policy.Name,$htmlwhite)
 			$rowdata += @(,("Version",($Script:htmlsb),$Policy.Version,$htmlwhite))
-			$rowdata += @(,("Category",($Script:htmlsb),"",$htmlwhite))
+			
+			If($Categories.Count -eq 0)
+			{
+				$rowdata += @(,("Category",($Script:htmlsb),"",$htmlwhite))
+			}
+			ElseIf($Categories.Count -eq 4)
+			{
+				$rowdata += @(,("Category",($Script:htmlsb),"All Categories",$htmlwhite))
+			}
+			Else
+			{
+				$cnt=-1
+				
+				ForEach($Category in $Categories)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						$rowdata += @(,("Category",($Script:htmlsb),$Category,$htmlwhite))
+					}
+					Else
+					{
+						$rowdata += @(,("",($Script:htmlsb),$Category,$htmlwhite))
+					}
+				}
+			}
+			
 			$rowdata += @(,("Description",($Script:htmlsb),$Policy.Description,$htmlwhite))
 			$rowdata += @(,("Last modification by",($Script:htmlsb), $Policy.AdminLastMod,$htmlwhite))
 			$rowdata += @(,("Modified on",($Script:htmlsb), $Policy.TimeLastMod.ToString(),$htmlwhite))
@@ -30520,6 +30728,820 @@ Function OutputPoliciesSummary
 			WriteHTMLLine 0 0 ""
 		}
 	}
+}
+
+Function OutputPoliciesDetails
+{
+	Param([object] $Policies)
+	
+	Write-Verbose "$(Get-Date -Format G): `t`tOutput Policy Properties"
+	
+	If($MSWord -or $PDF)
+	{
+		WriteWordLine 2 0 "Policy Properties"
+	}
+	If($Text)
+	{
+		Line 1 "Policy Properties"
+	}
+	If($HTML)
+	{
+		WriteHTMLLine 2 0 "Policy Properties"
+	}
+	
+	ForEach($Policy in $Policies)
+	{
+		Write-Verbose "$(Get-Date -Format G): `t`t`tProcessing Policy $($Policy.Name)"
+		
+		$ClientOptions   = $Policy.ClientPolicy.ClientOptions
+		$ControlSettings = $Policy.ClientPolicy.ControlSettings
+		$Redirection     = $Policy.ClientPolicy.Redirection
+		$Session         = $Policy.ClientPolicy.Session
+
+		Write-Verbose "$(Get-Date -Format G): `t`t`tPolicy"
+		Write-Verbose "$(Get-Date -Format G): `t`t`tPolicy/Criteria"
+		If($MSWord -or $PDF)
+		{
+			WriteWordLine 3 0 "Policy $($Policy.Name)"
+			WriteWordLine 4 0 "Policy"
+			$ScriptInformation = New-Object System.Collections.ArrayList
+			$ScriptInformation.Add(@{Data = "Name"; Value = $Policy.Name; }) > $Null
+			$ScriptInformation.Add(@{Data = "Description"; Value = $Policy.Description; }) > $Null
+
+			$Table = AddWordTable -Hashtable $ScriptInformation `
+			-Columns Data,Value `
+			-List `
+			-Format $wdTableGrid `
+			-AutoFit $wdAutoFitFixed;
+
+			SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+			SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+			$Table.Columns.Item(1).Width = 125;
+			$Table.Columns.Item(2).Width = 175;
+
+			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+			FindWordDocumentEnd
+			$Table = $Null
+			WriteWordLine 0 0 ""
+
+			WriteWordLine 4 0 "Apply policy to"
+			[System.Collections.Hashtable[]] $NameWordTable = @();
+			
+			ForEach($Item in $Policy.UsersGroups)
+			{
+				$NameTableRowHash = @{
+				Name = $Item.Account;
+				Type = $Item.Type;
+				SID  = $Item.Sid;
+				}
+				$NameWordTable += $NameTableRowHash;
+			}
+
+			$Table = AddWordTable -Hashtable $NameWordTable `
+			-Columns  Name,Type,SID `
+			-Headers  "Name","Type","SID"`
+			-Format $wdTableGrid `
+			-AutoFit $wdAutoFitFixed;
+
+			SetWordCellFormat -Collection $Table -Size 9 -BackgroundColor $wdColorWhite
+			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+			$Table.Columns.Item(1).Width = 200;
+			$Table.Columns.Item(2).Width = 50;
+			$Table.Columns.Item(3).Width = 250;
+
+			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+			FindWordDocumentEnd
+			$Table = $Null
+			WriteWordLine 0 0 ""
+		}
+		If($Text)
+		{
+			Line 2 "Policy $($Policy.Name)"
+			Line 0 ""
+			Line 2 "Policy"
+			Line 3 "Name`t   : " $Policy.Name
+			Line 3 "Description: " $Policy.Description
+			Line 0 ""
+
+			Line 2 "Apply policy to"
+			Line 3 "Name                                      Type   SID                                               "
+			Line 3 "==================================================================================================="
+			#       1234567890123456789012345678901234567890SS12345SS12345678901234567890123456789012345678901234567890
+			
+			ForEach($Item in $Policy.UsersGroups)
+			{
+				Line 3 ( "{0,-40}  {1,-5}  {2,-40}" -f `
+				$Item.Account, $Item.Type, $Item.Sid)
+			}
+			Line 0 ""
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 3 0 "Policy $($Policy.Name)"
+			$rowdata = @()
+			$columnHeaders = @("Name",($Script:htmlsb),$Policy.Name,$htmlwhite)
+			$rowdata += @(,("Description",($Script:htmlsb),$Policy.Description,$htmlwhite))
+
+			$msg = ""
+			$columnWidths = @("150","200")
+			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+			WriteHTMLLine 0 0 ""
+
+			$rowdata = @()
+
+			ForEach($Item in $Policy.UsersGroups)
+			{
+				$rowdata += @(,(
+				$Item.Account,$htmlwhite,
+				$Item.Type,$htmlwhite,
+				$Item.Sid,$htmlwhite))
+			}
+
+			$columnHeaders = @(
+			"Name",($Script:htmlsb),
+			"Type",($Script:htmlsb),
+			"SID",($Script:htmlsb))
+
+			$msg = "Apply policy to"
+			$columnWidths = @("200","50","300")
+			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+			WriteHTMLLine 0 0 ""
+		}
+
+		If($MSWord -or $PDF)
+		{
+			[System.Collections.Hashtable[]] $SettingsWordTable = @();
+		}
+		If($HTML)
+		{
+			$rowdata = @()
+		}
+
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession"
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Connection"
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Connection/Primary connection"
+		If($Policy.ClientPolicy.Session.PrimaryConnection.Enabled)
+		{
+			$txt = "Session/Connection/Primary connection/Name"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.PrimaryConnection.Name;
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.PrimaryConnection.Name,$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.PrimaryConnection.Name
+			}
+			
+			$txt = "Session/Connection/Primary connection/Login/Auto Login"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.PrimaryConnection.AutoStart.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.PrimaryConnection.AutoStart.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.PrimaryConnection.AutoStart.ToString()
+			}
+			
+			$AuthType = ""
+			Switch($Policy.ClientPolicy.Session.PrimaryConnection.AuthenticationType)
+			{
+				"Credentials"	{$AuthType = "Credentials"; Break}
+				"SingleSignOn"	{$AuthType = "Single Sign-On"; Break}
+				"SmartCard"		{$AuthType = "Smart card"; Break}
+				"Web"			{$AuthType = "Web"; Break}
+				Default			{$AuthType = "Primary connection/Login/Authentication type not found: $($Policy.ClientPolicy.Session.PrimaryConnection.AuthenticationType)"; Break}
+			}
+			
+			$txt = "Session/Connection/Primary connection/Login/Authentication type"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $AuthType;
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$AuthType,$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $AuthType
+			}
+
+			If($Policy.ClientPolicy.Session.PrimaryConnection.AuthenticationType -eq "Credentials")
+			{
+				$txt = "Session/Connection/Primary connection/Login/Save password"
+				If($MSWord -or $PDF)
+				{
+					$SettingsWordTable += @{
+					Text = $txt;
+					Value = $Policy.ClientPolicy.Session.PrimaryConnection.SavePassword.ToString();
+					}
+				}
+				If($HTML)
+				{
+					$rowdata += @(,(
+					$txt,$htmlbold,
+					$Policy.ClientPolicy.Session.PrimaryConnection.SavePassword.ToString(),$htmlwhite))
+				}
+				If($Text)
+				{
+					OutputPolicySetting $txt $Policy.ClientPolicy.Session.PrimaryConnection.SavePassword.ToString()
+				}
+
+				$txt = "Session/Connection/Primary connection/Login/Domain"
+				If($MSWord -or $PDF)
+				{
+					$SettingsWordTable += @{
+					Text = $txt;
+					Value = $Policy.ClientPolicy.Session.PrimaryConnection.Domain;
+					}
+				}
+				If($HTML)
+				{
+					$rowdata += @(,(
+					$txt,$htmlbold,
+					$Policy.ClientPolicy.Session.PrimaryConnection.Domain,$htmlwhite))
+				}
+				If($Text)
+				{
+					OutputPolicySetting $txt $Policy.ClientPolicy.Session.PrimaryConnection.Domain
+				}
+			}
+		}
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Connection/Secondary connections"
+		If($Policy.ClientPolicy.Session.SecondaryConnections.Enabled)
+		{
+			$txt = "Session/Connection/Secondary connections/Secondary connections"
+			$cnt = 0
+			
+			ForEach($Item in $Policy.ClientPolicy.Session.SecondaryConnections.ConnectionList)
+			{
+				$cnt++
+				$GWMode = ""
+				Switch($Item.Mode)
+				{
+					"DirectMode"		{$GWMode = "Direct Mode"; Break}
+					"DirectSSLMode"		{$GWMode = "Direct SSL Mode"; Break}
+					"GatewayMode"		{$GWMode = "Gateway Mode"; Break}
+					"GatewaySSLMode"	{$GWMode = "Gateway SSL Mode"; Break}
+					Default				{$GWMode = "Secondary connections/Secondary connections/Mode not found: $($Item.Mode)"; Break}
+				}
+		
+				If($cnt -eq 1)
+				{
+					If($MSWord -or $PDF)
+					{
+						$SettingsWordTable += @{
+						Text = $txt;
+						Value = "Connection: $($Item.Server)   Mode: $GWMode   Port: $($Item.ServerPort.ToString())";
+						}
+					}
+					If($HTML)
+					{
+						$rowdata += @(,(
+						$txt,$htmlbold,
+						"Connection: $($Item.Server)   Mode: $GWMode   Port: $($Item.ServerPort.ToString())",$htmlwhite))
+					}
+					If($Text)
+					{
+						OutputPolicySetting $txt "Connection: $($Item.Server)   Mode: $GWMode   Port: $($Item.ServerPort.ToString())"
+					}
+				}
+				Else
+				{
+					If($MSWord -or $PDF)
+					{
+						$SettingsWordTable += @{
+						Text = "";
+						Value = "Connection: $($Item.Server)   Mode: $GWMode   Port: $($Item.ServerPort.ToString())";
+						}
+					}
+					If($HTML)
+					{
+						$rowdata += @(,(
+						"",$htmlbold,
+						"Connection: $($Item.Server)   Mode: $GWMode   Port: $($Item.ServerPort.ToString())",$htmlwhite))
+					}
+					If($Text)
+					{
+						OutputPolicySetting "`t`t`t`t`t`t`t      " "Connection: $($Item.Server)   Mode: $GWMode   Port: $($Item.ServerPort.ToString())"
+					}
+				}
+			}
+		}
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Connection/Reconnection"
+		If($Policy.ClientPolicy.Session.Reconnection.Enabled)
+		{
+			$txt = "Session/Connection/Reconnection/Reconnection/Reconnect if connection is dropped"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.Reconnection.EnableReconnection.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.Reconnection.EnableReconnection.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.Reconnection.EnableReconnection.ToString()
+			}
+			
+			$txt = "Session/Connection/Reconnection/Reconnection/Connection retries"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.Reconnection.ConnectionRetries.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.Reconnection.ConnectionRetries.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.Reconnection.ConnectionRetries.ToString()
+			}
+			
+			$txt = "Session/Connection/Reconnection/Connection banner/Show if reconnection is not established within (seconds)"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.Reconnection.ConnectionBannerDelay.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.Reconnection.ConnectionBannerDelay.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.Reconnection.ConnectionBannerDelay.ToString()
+			}
+		}
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Connection/Computer name"
+		If($Policy.ClientPolicy.Session.ComputerName.Enabled)
+		{
+			$txt = "Session/Connection/Computer name/Computer name/Override computer name"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.ComputerName.OverrideComputerName;
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.ComputerName.OverrideComputerName,$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.ComputerName.OverrideComputerName
+			}
+		}
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Connection/Advanced settings"
+		If($Policy.ClientPolicy.Session.ConnectionAdvancedSettings.Enabled)
+		{
+			$txt = "Session/Connection/Advanced settings/Connection/Connection timeout (seconds)"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.ConnectionAdvancedSettings.ConnectionTimeout.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.ConnectionAdvancedSettings.ConnectionTimeout.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.ConnectionAdvancedSettings.ConnectionTimeout.ToString()
+			}
+			
+			$txt = "Session/Connection/Advanced settings/Connection banner/Show if connection is not established within (seconds)"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.ConnectionAdvancedSettings.ConnectionBannerDelay.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.ConnectionAdvancedSettings.ConnectionBannerDelay.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.ConnectionAdvancedSettings.ConnectionBannerDelay.ToString()
+			}
+			
+			$txt = "Session/Connection/Advanced settings/Desktop/Show if published application does not start within (seconds)"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.ConnectionAdvancedSettings.ShowDesktopTimeout.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.ConnectionAdvancedSettings.ShowDesktopTimeout.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.ConnectionAdvancedSettings.ShowDesktopTimeout.ToString()
+			}
+		}
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Connection/Web authentication"
+		If($Policy.ClientPolicy.Session.WebAuthentication.Enabled)
+		{
+			$txt = "Session/Connection/Web authentication/Web authentication/Use default OS browser"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.WebAuthentication.DefaultOsBrowser.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.WebAuthentication.DefaultOsBrowser.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.WebAuthentication.DefaultOsBrowser.ToString()
+			}
+			
+			If($Policy.ClientPolicy.Session.WebAuthentication.DefaultOsBrowser -eq $False)
+			{
+				$txt = "Session/Connection/Web authentication/Web authentication/Open browser window to complete log out"
+				If($MSWord -or $PDF)
+				{
+					$SettingsWordTable += @{
+					Text = $txt;
+					Value = $Policy.ClientPolicy.Session.WebAuthentication.OpenBrowserOnLogout.ToString();
+					}
+				}
+				If($HTML)
+				{
+					$rowdata += @(,(
+					$txt,$htmlbold,
+					$Policy.ClientPolicy.Session.WebAuthentication.OpenBrowserOnLogout.ToString(),$htmlwhite))
+				}
+				If($Text)
+				{
+					OutputPolicySetting $txt $Policy.ClientPolicy.Session.WebAuthentication.OpenBrowserOnLogout.ToString()
+				}
+			}
+		}
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Connection/Multifactor authentication"
+		If($Policy.ClientPolicy.Session.MultiFactorAuthentication.Enabled)
+		{
+			$txt = "Session/Connection/Multifactor authentication/Multifactor authentication/Remember last used method"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.MultiFactorAuthentication.RememberLastUsedMethod.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.MultiFactorAuthentication.RememberLastUsedMethod.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.MultiFactorAuthentication.RememberLastUsedMethod.ToString()
+			}
+		}
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Connection/Session prelaunch"
+		If($Policy.ClientPolicy.Session.SessionPreLaunch.Enabled)
+		{
+			$SPMode = ""
+			Switch($Policy.ClientPolicy.Session.SessionPreLaunch.PreLaunchMode)
+			{
+				"Off"				{$SPMode = "Off"; Break}
+				"Basic"				{$SPMode = "Basic"; Break}
+				"MachineLearning"	{$SPMode = "Machine Learning"; Break}
+				Default				{$SPMode = "Connection/Session prelaunch mode not found: $($Policy.ClientPolicy.Session.SessionPreLaunch.PreLaunchMode)"; Break}
+			}
+
+			$txt = "Session/Connection/Session prelaunch/Session prelaunch/Mode"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $SPMode;
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$SPMode,$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $SPMode
+			}
+			
+			$txt = "Session/Connection/Session prelaunch/Session prelaunch/Exclude sessions prelaunch"
+			$cnt = 0
+			
+			ForEach($Item in $Policy.ClientPolicy.Session.SessionPreLaunch.PreLaunchExclude)
+			{
+				$cnt++
+				$TmpArray = $Item.Split(":")
+				$Day      = $TmpArray[0].ToString()
+				$MonthNum = $TmpArray[1]
+				
+				Switch($MonthNum)
+				{
+					1		{$Month = "January"; Break}
+					2		{$Month = "February"; Break}
+					3		{$Month = "March"; Break}
+					4		{$Month = "April"; Break}
+					5		{$Month = "May"; Break}
+					6		{$Month = "June"; Break}
+					7		{$Month = "July"; Break}
+					8		{$Month = "August"; Break}
+					9		{$Month = "September"; Break}
+					10		{$Month = "October"; Break}
+					11		{$Month = "November"; Break}
+					12		{$Month = "December"; Break}
+					Default	{$Month = "Exclude sessions prelaunch Month not founf: $($MonthNum)"; Break}
+				}
+				
+				If($cnt -eq 1)
+				{
+					If($MSWord -or $PDF)
+					{
+						$SettingsWordTable += @{
+						Text = $txt;
+						Value = "Day: $Day   Month: $Month";
+						}
+					}
+					If($HTML)
+					{
+						$rowdata += @(,(
+						$txt,$htmlbold,
+						"Day: $Day   Month: $Month",$htmlwhite))
+					}
+					If($Text)
+					{
+						OutputPolicySetting $txt "Day: $Day   Month: $Month"
+					}
+				}
+				Else
+				{
+					If($MSWord -or $PDF)
+					{
+						$SettingsWordTable += @{
+						Text = "";
+						Value = "Day: $Day   Month: $Month";
+						}
+					}
+					If($HTML)
+					{
+						$rowdata += @(,(
+						"",$htmlbold,
+						"Day: $Day   Month: $Month",$htmlwhite))
+					}
+					If($Text)
+					{
+						OutputPolicySetting "`t`t`t`t`t`t`t`t`t`t " "Day: $Day   Month: $Month"
+					}
+				}
+				
+			}
+			
+		}
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Connection/Local proxy address"
+		If($Policy.ClientPolicy.Session.LocalProxyAddress.Enabled)
+		{
+			$txt = "Session/Connection/Local proxy address/Local proxy address/Use 127.0.0.1 IP address when using Gateway mode in VPN scenarios"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.LocalProxyAddress.UseLocalHostProxyIP.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.LocalProxyAddress.UseLocalHostProxyIP.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.LocalProxyAddress.UseLocalHostProxyIP.ToString()
+			}
+		}
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Display"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Display/Settings"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Display/Multi-monitor"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Display/Published applications"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Display/Desktop options"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Display/Browser"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Printing"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Scanning"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Audio"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Keyboard"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Local devices and resources"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Local devices and resources/Clipboard"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Local devices and resources/Disk drives"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Local devices and resources/Devices"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Local devices and resources/Video capture devices"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Local devices and resources/Ports"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Local devices and resources/Smart cards"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Local devices and resources/Windows touch input"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Local devices and resources/File transfer"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Experience"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Experience/Performance"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Experience/Compression"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Network"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Server authentication"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Advanced settings"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tClient options"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tClient options/Connection"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tClient options/Logging"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tClient options/Update"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tClient options/PC keyboard"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tClient options/Single Sign-On"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tClient options/Advanced"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tClient options/Advanced/Global"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tClient options/Advanced/Language"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tClient options/Advanced/Printing"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tClient options/Advanced/Windows client"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tClient options/Advanced/RemoteFX USB redirection"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tControl settings"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tControl settings/Connections"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tControl settings/Password"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tControl settings/Import and export"
+		
+		Write-Verbose "$(Get-Date -Format G): `t`t`tRedirection"
+
+		If($MSWord -or $PDF)
+		{
+			If($SettingsWordTable.Count -gt 0) #don't process if array is empty
+			{
+				$Table = AddWordTable -Hashtable $SettingsWordTable `
+				-Columns  Text,Value `
+				-Headers  "Setting Key","Value"`
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
+
+				SetWordCellFormat -Collection $Table -Size 9 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				$Table.Columns.Item(1).Width = 300;
+				$Table.Columns.Item(2).Width = 200;
+
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+			}
+			Else
+			{
+				WriteWordLine 0 1 "There are no policy properties"
+			}
+			FindWordDocumentEnd
+			$Table = $Null
+			WriteWordLine 0 0 ""
+		}
+		If($Text)
+		{
+			Line 0 ""
+		}
+		If($HTML)
+		{
+			If($rowdata.count -gt 0)
+			{
+				$columnHeaders = @(
+				'Setting Key',($script:htmlsb),
+				'Value',($script:htmlsb))
+
+				$msg = ""
+				$columnWidths = @("400","300")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+				WriteHTMLLine 0 0 ""
+			}
+		}
+
+		Write-Verbose "$(Get-Date -Format G): "
+	}
+}
+
+Function OutputPolicySetting
+{
+	Param([string] $outputText, [string] $outputData)
+
+	If($outputText -ne "")
+	{
+		$xLength = $outputText.Length
+		If($outputText.Substring($xLength-2,2) -ne ": ")
+		{
+			$outputText += ": "
+		}
+	}
+	Line 2 $outputText $outputData
 }
 #endregion
 
