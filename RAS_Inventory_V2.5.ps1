@@ -387,7 +387,7 @@
 	NAME: RAS_Inventory_V2.5.ps1
 	VERSION: 2.50
 	AUTHOR: Carl Webster
-	LASTEDIT: August 5, 2021 Update 5
+	LASTEDIT: August 6, 2021 Update 6
 #>
 
 
@@ -30758,8 +30758,8 @@ Function OutputPoliciesDetails
 		$Redirection     = $Policy.ClientPolicy.Redirection
 		$Session         = $Policy.ClientPolicy.Session
 
-		Write-Verbose "$(Get-Date -Format G): `t`t`tPolicy"
-		Write-Verbose "$(Get-Date -Format G): `t`t`tPolicy/Criteria"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tPolicy"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tPolicy/Criteria"
 		If($MSWord -or $PDF)
 		{
 			WriteWordLine 3 0 "Policy $($Policy.Name)"
@@ -30881,9 +30881,9 @@ Function OutputPoliciesDetails
 			$rowdata = @()
 		}
 
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession"
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Connection"
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Connection/Primary connection"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Connection"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Connection/Primary connection"
 		If($Policy.ClientPolicy.Session.PrimaryConnection.Enabled)
 		{
 			$txt = "Session/Connection/Primary connection/Name"
@@ -30995,7 +30995,7 @@ Function OutputPoliciesDetails
 			}
 		}
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Connection/Secondary connections"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Connection/Secondary connections"
 		If($Policy.ClientPolicy.Session.SecondaryConnections.Enabled)
 		{
 			$txt = "Session/Connection/Secondary connections/Secondary connections"
@@ -31057,7 +31057,7 @@ Function OutputPoliciesDetails
 			}
 		}
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Connection/Reconnection"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Connection/Reconnection"
 		If($Policy.ClientPolicy.Session.Reconnection.Enabled)
 		{
 			$txt = "Session/Connection/Reconnection/Reconnection/Reconnect if connection is dropped"
@@ -31118,7 +31118,7 @@ Function OutputPoliciesDetails
 			}
 		}
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Connection/Computer name"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Connection/Computer name"
 		If($Policy.ClientPolicy.Session.ComputerName.Enabled)
 		{
 			$txt = "Session/Connection/Computer name/Computer name/Override computer name"
@@ -31141,7 +31141,7 @@ Function OutputPoliciesDetails
 			}
 		}
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Connection/Advanced settings"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Connection/Advanced settings"
 		If($Policy.ClientPolicy.Session.ConnectionAdvancedSettings.Enabled)
 		{
 			$txt = "Session/Connection/Advanced settings/Connection/Connection timeout (seconds)"
@@ -31202,7 +31202,7 @@ Function OutputPoliciesDetails
 			}
 		}
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Connection/Web authentication"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Connection/Web authentication"
 		If($Policy.ClientPolicy.Session.WebAuthentication.Enabled)
 		{
 			$txt = "Session/Connection/Web authentication/Web authentication/Use default OS browser"
@@ -31247,7 +31247,7 @@ Function OutputPoliciesDetails
 			}
 		}
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Connection/Multifactor authentication"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Connection/Multifactor authentication"
 		If($Policy.ClientPolicy.Session.MultiFactorAuthentication.Enabled)
 		{
 			$txt = "Session/Connection/Multifactor authentication/Multifactor authentication/Remember last used method"
@@ -31270,7 +31270,7 @@ Function OutputPoliciesDetails
 			}
 		}
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Connection/Session prelaunch"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Connection/Session prelaunch"
 		If($Policy.ClientPolicy.Session.SessionPreLaunch.Enabled)
 		{
 			$SPMode = ""
@@ -31373,7 +31373,7 @@ Function OutputPoliciesDetails
 			
 		}
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Connection/Local proxy address"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Connection/Local proxy address"
 		If($Policy.ClientPolicy.Session.LocalProxyAddress.Enabled)
 		{
 			$txt = "Session/Connection/Local proxy address/Local proxy address/Use 127.0.0.1 IP address when using Gateway mode in VPN scenarios"
@@ -31396,94 +31396,634 @@ Function OutputPoliciesDetails
 			}
 		}
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Display"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Display"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Display/Settings"
+		If($Policy.ClientPolicy.Session.Settings.Enabled)
+		{
+			$GAMode = ""
+			Switch($Policy.ClientPolicy.Session.Settings.GraphicsAcceleration)
+			{
+				"AVCAdaptive"		{$GAMode = "AVC Adaptive"; Break}
+				"Basic"				{$GAMode = "Basic"; Break}
+				"None"				{$GAMode = "None"; Break}
+				"RemoteFx"			{$GAMode = "RemoteFX (default, forces 32-bit color depth)"; Break}
+				"RemoteFxAdaptive"	{$GAMode = "RemoteFx Adaptive"; Break}
+				Default				{$GAMode = "Display settings/Acceleration mode not found: $($Policy.ClientPolicy.Session.Settings.GraphicsAcceleration)"; Break}
+			}
+
+			$txt = "Session/Display/Settings/Display settings/Acceleration mode"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $GAMode;
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$GAMode,$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $GAMode
+			}
+			
+			$ColorDepth = ""
+			Switch($Policy.ClientPolicy.Session.Settings.ColorDepths)
+			{
+				"Colors256"				{$ColorDepth = "256 Colors"; Break}
+				"HighColor15Bit"		{$ColorDepth = "High Color (15 bit)"; Break}
+				"HighColor16Bit"		{$ColorDepth = "High Color (16 bit)"; Break}
+				"TrueColor24Bit"		{$ColorDepth = "True Color (24 bit)"; Break}
+				"HighestQuality32Bit"	{$ColorDepth = "Highest Quality (32 bit)"; Break}
+				Default					{$ColorDepth = "Display settings/Color depth not found: $($Policy.ClientPolicy.Session.Settings.ColorDepths)"; Break}
+			}
+
+			$txt = "Session/Display/Settings/Display settings/Color depth"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $ColorDepth;
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$ColorDepth,$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $ColorDepth
+			}
+		}
+
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Display/Multi-monitor"
+		If($Policy.ClientPolicy.Session.MultiMonitor.Enabled)
+		{
+			$txt = "Session/Display/Multi-monitor/Multi-monitor/Use all monitors for desktop session (if applicable)"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.MultiMonitor.UseAllMonitors.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.MultiMonitor.UseAllMonitors.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.MultiMonitor.UseAllMonitors.ToString()
+			}
+		}
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Display/Settings"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Display/Published applications"
+		If($Policy.ClientPolicy.Session.PublishedApplications.Enabled)
+		{
+			$txt = "Session/Display/Published applications/Published applications/Use primary monitor only"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.PublishedApplications.UsePrimaryMonitor.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.PublishedApplications.UsePrimaryMonitor.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.PublishedApplications.UsePrimaryMonitor.ToString()
+			}
+		}
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Display/Multi-monitor"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Display/Desktop options"
+		If($Policy.ClientPolicy.Session.DesktopOptions.Enabled)
+		{
+			$SmartSize = ""
+			Switch($Policy.ClientPolicy.Session.DesktopOptions.SmartSizing)
+			{
+				"Disabled"	{$SmartSize = "Disabled"; Break}
+				"Scale"		{$SmartSize = "Scale (fit to window)"; Break}
+				"Resize"	{$SmartSize = "Resize (update resolution)"; Break}
+				Default		{$SmartSize = "Desktop options/Smart-sizing not found: $($Policy.ClientPolicy.Session.DesktopOptions.SmartSizing)"; Break}
+			}
+
+			$txt = "Session/Display/Desktop options/Desktop options/Smart-sizing"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $SmartSize;
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$SmartSize,$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $SmartSize
+			}
+			
+			$txt = "Session/Display/Desktop options/Desktop options/Embed desktop in launcher"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.DesktopOptions.EmbedDesktop.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.DesktopOptions.EmbedDesktop.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.DesktopOptions.EmbedDesktop.ToString()
+			}
+
+			$txt = "Session/Display/Desktop options/Desktop options/Span desktop across all monitors"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.DesktopOptions.SpanDesktops.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.DesktopOptions.SpanDesktops.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.DesktopOptions.SpanDesktops.ToString()
+			}
+
+			$ConnBar = ""
+			Switch($Policy.ClientPolicy.Session.DesktopOptions.FullScreenBar)
+			{
+				"DoNotShow"		{$ConnBar = "Do not show"; Break}
+				"ShowPinned"	{$ConnBar = "Show pinned"; Break}
+				"ShowUnPinned"	{$ConnBar = "Show unpinned"; Break}
+				Default			{$ConnBar = "Desktop options/Connection bar in full screen not found: $($Policy.ClientPolicy.Session.DesktopOptions.FullScreenBar)"; Break}
+			}
+
+			$txt = "Session/Display/Desktop options/Desktop options/Connection bar in full screen"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $ConnBar;
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$ConnBar,$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $ConnBar
+			}
+		}
+
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Display/Browser"
+		If($Policy.ClientPolicy.Session.Browser.Enabled)
+		{
+			$BrowserOpen = ""
+			Switch($Policy.ClientPolicy.Session.Browser.BrowserOpenIn)
+			{
+				"SameTab"	{$BrowserOpen = "Same tab"; Break}
+				"NewTab"	{$BrowserOpen = "New tab"; Break}
+				Default		{$BrowserOpen = "Browser/Open applications in not found: $($Policy.ClientPolicy.Session.Browser.BrowserOpenIn)"; Break}
+			}
+
+			$txt = "Session/Display/Browser/Browser/Open applications in"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $BrowserOpen;
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$BrowserOpen,$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $BrowserOpen
+			}
+		}
+
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Printing"
+		If($Policy.ClientPolicy.Session.Printing.Enabled)
+		{
+			$PrintTechUse = ""
+			Switch($Policy.ClientPolicy.Session.Printing.DefaultPrinterTech)
+			{
+				"None"											{$PrintTechUse = "None"; Break}
+				"RasUniversalPrintingTechnology"				{$PrintTechUse = "RAS Universal Printing technology"; Break}
+				"MicrosoftBasicPrintingTechnology"				{$PrintTechUse = "Microsoft basic Printing Redirection technology"; Break}
+				"RasUniversalPrintingAndMsBasicTechnologies"	{$PrintTechUse = "RAS Universal Printing and MS Basic Redirection technologies"; Break}
+				Default											{$PrintTechUse = "Technology/Use not found: $($Policy.ClientPolicy.Session.Printing.DefaultPrinterTech)"; Break}
+			}
+
+			$txt = "Session/Printing/Technology/Use"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $PrintTechUse;
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$PrintTechUse,$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $PrintTechUse
+			}
+
+			If( $Policy.ClientPolicy.Session.Printing.DefaultPrinterTech -eq "RasUniversalPrintingTechnology" -or 
+				$Policy.ClientPolicy.Session.Printing.DefaultPrinterTech -eq "RasUniversalPrintingAndMsBasicTechnologies" )
+			{
+				$RedirectPrinters = ""
+				Switch($Policy.ClientPolicy.Session.Printing.RedirectPrinters)
+				{
+					"All"			{$RedirectPrinters = "All"; Break}
+					"DefaultOnly"	{$RedirectPrinters = "Default only"; Break}
+					"SpecificOnly"	{$RedirectPrinters = "Specific only"; Break}
+					Default			{$RedirectPrinters = "RAS Universal Printing/Redirect printers not found: $($Policy.ClientPolicy.Session.Printing.RedirectPrinters)"; Break}
+				}
+
+				$txt = "Session/Printing/RAS Universal Printing/Redirect printers"
+				If($MSWord -or $PDF)
+				{
+					$SettingsWordTable += @{
+					Text = $txt;
+					Value = $RedirectPrinters;
+					}
+				}
+				If($HTML)
+				{
+					$rowdata += @(,(
+					$txt,$htmlbold,
+					$RedirectPrinters,$htmlwhite))
+				}
+				If($Text)
+				{
+					OutputPolicySetting $txt $RedirectPrinters
+				}
+				
+				If($Policy.ClientPolicy.Session.Printing.RedirectPrinters -eq "SpecificOnly")
+				{
+					ForEach($Item in $Policy.ClientPolicy.Session.Printing.RedirectPrintersList)
+					{
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = "";
+							Value = "Name: $($Item)";
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							"",$htmlbold,
+							"Name: $($Item)",$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting "`t`t`t`t`t`t`t " "Name: $($Item)"
+						}
+					}
+				}
+			}
+		}
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Display/Published applications"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Scanning"
+		If($Policy.ClientPolicy.Session.Scanning.Enabled)
+		{
+			$ScanTechUse = ""
+			Switch($Policy.ClientPolicy.Session.Scanning.ScanTech)
+			{
+				"None"			{$ScanTechUse = "None"; Break}
+				"WIA"			{$ScanTechUse = "WIA"; Break}
+				"TWAIN"			{$ScanTechUse = "TWAIN"; Break}
+				"WIAandTWAIN"	{$ScanTechUse = "WIA and TWAIN"; Break}
+				Default			{$ScanTechUse = "Technology/Use not found: $($Policy.ClientPolicy.Session.Scanning.ScanTech)"; Break}
+			}
+
+			$txt = "Session/Scanning/Technology/Use"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $ScanTechUse;
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$ScanTechUse,$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $ScanTechUse
+			}
+
+			If( $Policy.ClientPolicy.Session.Scanning.ScanTech -ne "None" )
+			{
+				$RedirectScanners = ""
+				Switch($Policy.ClientPolicy.Session.Scanning.ScanRedirect)
+				{
+					"All"			{$RedirectScanners = "All"; Break}
+					"SpecificOnly"	{$RedirectScanners = "Specific only"; Break}
+					Default			{$RedirectScanners = "RAS Universal Scanning/Redirect scanners not found: $($Policy.ClientPolicy.Session.Scanning.ScanRedirect)"; Break}
+				}
+
+				$txt = "Session/Printing/RAS Universal Scanning/Redirect scanners"
+				If($MSWord -or $PDF)
+				{
+					$SettingsWordTable += @{
+					Text = $txt;
+					Value = $RedirectScanners;
+					}
+				}
+				If($HTML)
+				{
+					$rowdata += @(,(
+					$txt,$htmlbold,
+					$RedirectScanners,$htmlwhite))
+				}
+				If($Text)
+				{
+					OutputPolicySetting $txt $RedirectScanners
+				}
+				
+				If($Policy.ClientPolicy.Session.Scanning.ScanRedirect -eq "SpecificOnly")
+				{
+					$ScannerArray = @()
+					If($Policy.ClientPolicy.Session.Scanning.ScanTech -eq "WIA")
+					{
+						$ScannerArray = $Policy.ClientPolicy.Session.Scanning.ScanListWia
+					}
+					Else
+					{
+						$ScannerArray = $Policy.ClientPolicy.Session.Scanning.ScanListTwain
+					}
+					
+					ForEach($Item in $ScannerArray)
+					{
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = "";
+							Value = "Name: $($Item)";
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							"",$htmlbold,
+							"Name: $($Item)",$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting "`t`t`t`t`t`t`t " "Name: $($Item)"
+						}
+					}
+				}
+			}
+		}
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Display/Desktop options"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Audio"
+		If($Policy.ClientPolicy.Session.Audio.Enabled)
+		{
+			$AudioMode = ""
+			Switch($Policy.ClientPolicy.Session.Audio.AudioModes)
+			{
+				"BringToThisComputer"	{$AudioMode = "Bring to this computer"; Break}
+				"DoNotPlay"				{$AudioMode = "Do not play"; Break}
+				"LeaveAtRemoteComputer"	{$AudioMode = "Leave at remote computer"; Break}
+				Default					{$AudioMode = "Remote audio playback/Where not found: $($Policy.ClientPolicy.Session.Audio.AudioModes)"; Break}
+			}
+
+			$txt = "Session/Audio/Remote audio playback/Where"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $AudioMode;
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$AudioMode,$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $AudioMode
+			}
+
+			$AudioQuality = ""
+			Switch($Policy.ClientPolicy.Session.Audio.AudioQuality)
+			{
+				"AdjustDynamically"			{$AudioQuality = "Dynamically adjust based on available bandwidth"; Break}
+				"UseMediumQuality"			{$AudioQuality = "Always use medium audio quality"; Break}
+				"UseUncompressedQuality"	{$AudioQuality = "Always use uncompressed audio quality"; Break}
+				Default						{$AudioQuality = "Remote audio playback/Quality not found: $($Policy.ClientPolicy.Session.Audio.AudioQuality)"; Break}
+			}
+
+			$txt = "Session/Audio/Remote audio playback/Quality"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $AudioQuality;
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$AudioQuality,$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $AudioQuality
+			}
+
+			$txt = "Session/Audio/Remote audio recording/Enable recording (if applicable)"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.Audio.AudioRec.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.Audio.AudioRec.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.Audio.AudioRec.ToString()
+			}
+		}
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Display/Browser"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Keyboard"
+		If($Policy.ClientPolicy.Session.Keyboard.Enabled)
+		{
+
+
+
+			$KeyboardWindow = ""
+			Switch($Policy.ClientPolicy.Session.Keyboard.KeyboardWindow)
+			{
+				"LocalComputer"		{$KeyboardWindow = "On the local computer"; Break}
+				"RemoteComputer"	{$KeyboardWindow = "On the remote computer"; Break}
+				"FullScreenMode"	{$KeyboardWindow = "In full screen mode only"; Break}
+				Default				{$KeyboardWindow = "Keyboard/Apply Windows key combinations for desktops only not found: $($Policy.ClientPolicy.Session.Keyboard.KeyboardWindow)"; Break}
+			}
+
+			$txt = "Session/Keyboard/Keyboard/Apply Windows key combinations for desktops only"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $KeyboardWindow;
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$KeyboardWindow,$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $KeyboardWindow
+			}
+
+			$txt = "Session/Keyboard/Keyboard/Send Unicode characters"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.Keyboard.SendUnicodeChars.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.Keyboard.SendUnicodeChars.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.Keyboard.SendUnicodeChars.ToString()
+			}
+		}
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Printing"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Local devices and resources"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Scanning"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Local devices and resources/Clipboard"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Audio"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Local devices and resources/Disk drives"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Keyboard"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Local devices and resources/Devices"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Local devices and resources"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Local devices and resources/Video capture devices"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Local devices and resources/Clipboard"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Local devices and resources/Ports"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Local devices and resources/Disk drives"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Local devices and resources/Smart cards"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Local devices and resources/Devices"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Local devices and resources/Windows touch input"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Local devices and resources/Video capture devices"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Local devices and resources/File transfer"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Local devices and resources/Ports"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Experience"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Local devices and resources/Smart cards"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Experience/Performance"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Local devices and resources/Windows touch input"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Experience/Compression"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Local devices and resources/File transfer"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Network"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Experience"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Server authentication"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Experience/Performance"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Advanced settings"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Experience/Compression"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tClient options"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Network"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tClient options/Connection"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Server authentication"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tClient options/Logging"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tSession/Advanced settings"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tClient options/Update"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tClient options"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tClient options/PC keyboard"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tClient options/Connection"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tClient options/Single Sign-On"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tClient options/Logging"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tClient options/Advanced"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tClient options/Update"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tClient options/Advanced/Global"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tClient options/PC keyboard"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tClient options/Advanced/Language"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tClient options/Single Sign-On"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tClient options/Advanced/Printing"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tClient options/Advanced"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tClient options/Advanced/Windows client"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tClient options/Advanced/Global"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tClient options/Advanced/RemoteFX USB redirection"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tClient options/Advanced/Language"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tControl settings"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tClient options/Advanced/Printing"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tControl settings/Connections"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tClient options/Advanced/Windows client"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tControl settings/Password"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tClient options/Advanced/RemoteFX USB redirection"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tControl settings/Import and export"
 		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tControl settings"
-		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tControl settings/Connections"
-		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tControl settings/Password"
-		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tControl settings/Import and export"
-		
-		Write-Verbose "$(Get-Date -Format G): `t`t`tRedirection"
+		Write-Verbose "$(Get-Date -Format G): `t`t`t`tRedirection"
 
 		If($MSWord -or $PDF)
 		{
 			If($SettingsWordTable.Count -gt 0) #don't process if array is empty
 			{
+				WriteWordLine 4 0 "Properties"
 				$Table = AddWordTable -Hashtable $SettingsWordTable `
 				-Columns  Text,Value `
 				-Headers  "Setting Key","Value"`
@@ -31518,7 +32058,7 @@ Function OutputPoliciesDetails
 				'Setting Key',($script:htmlsb),
 				'Value',($script:htmlsb))
 
-				$msg = ""
+				$msg = "Properties"
 				$columnWidths = @("400","300")
 				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
 				WriteHTMLLine 0 0 ""
