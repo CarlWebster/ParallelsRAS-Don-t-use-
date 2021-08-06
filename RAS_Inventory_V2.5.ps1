@@ -387,7 +387,7 @@
 	NAME: RAS_Inventory_V2.5.ps1
 	VERSION: 2.50
 	AUTHOR: Carl Webster
-	LASTEDIT: August 6, 2021 Update 6
+	LASTEDIT: August 6, 2021 Update 7
 #>
 
 
@@ -31904,9 +31904,6 @@ Function OutputPoliciesDetails
 		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Keyboard"
 		If($Policy.ClientPolicy.Session.Keyboard.Enabled)
 		{
-
-
-
 			$KeyboardWindow = ""
 			Switch($Policy.ClientPolicy.Session.Keyboard.KeyboardWindow)
 			{
@@ -31956,34 +31953,1064 @@ Function OutputPoliciesDetails
 		}
 		
 		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Local devices and resources"
-		
 		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Local devices and resources/Clipboard"
+		If($Policy.ClientPolicy.Session.Clipboard.Enabled)
+		{
+			$ClipboardRedir = ""
+			Switch($Policy.ClientPolicy.Session.Clipboard.ClipboardDirection)
+			{
+				"ClientToServer"	{$ClipboardRedir = "Client to server only"; Break}
+				"ServerToClient"	{$ClipboardRedir = "Server to client only"; Break}
+				"Bidirectional"		{$ClipboardRedir = "Bidirectional"; Break}
+				"None"				{$ClipboardRedir = "Disabled"; Break}
+				Default				{$ClipboardRedir = "Clipboard/Clipboard redirection not found: $($Policy.ClientPolicy.Session.Clipboard.ClipboardDirection)"; Break}
+			}
+
+			$txt = "Session/Local devices and resources/Clipboard/Clipboard/Clipboard redirection"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $ClipboardRedir;
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$ClipboardRedir,$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $ClipboardRedir
+			}
+		}
 		
 		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Local devices and resources/Disk drives"
+		If($Policy.ClientPolicy.Session.DiskDrives.Enabled)
+		{
+			$txt = "Session/Local devices and resources/Disk drives/Disk drives/Allow disk drives redirection"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.DiskDrives.RedirectDrives.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.DiskDrives.RedirectDrives.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.DiskDrives.RedirectDrives.ToString()
+			}
+
+			$txt = "Session/Local devices and resources/Disk drives/Disk drives/Use all disk drives available"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.DiskDrives.UseAllDrives.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.DiskDrives.UseAllDrives.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.DiskDrives.UseAllDrives.ToString()
+			}
+
+			If($Policy.ClientPolicy.Session.DiskDrives.UseAllDrives)
+			{
+				If($MSWord -or $PDF)
+				{
+					$SettingsWordTable += @{
+					Text = "";
+					Value = "Drives A through Z";
+					}
+				}
+				If($HTML)
+				{
+					$rowdata += @(,(
+					"",$htmlbold,
+					"Drives A through Z",$htmlwhite))
+				}
+				If($Text)
+				{
+					OutputPolicySetting "`t`t`t`t`t`t`t`t`t`t`t   " "Drives A through Z"
+				}
+			}
+			Else
+			{
+				ForEach($Item in $Policy.ClientPolicy.Session.DiskDrives.RedirectToDrives)
+				{
+					If($MSWord -or $PDF)
+					{
+						$SettingsWordTable += @{
+						Text = "";
+						Value = $Item;
+						}
+					}
+					If($HTML)
+					{
+						$rowdata += @(,(
+						"",$htmlbold,
+						$Item,$htmlwhite))
+					}
+					If($Text)
+					{
+						OutputPolicySetting "`t`t`t`t`t`t`t`t`t`t`t  " $Item
+					}
+				}
+			}
+
+			$txt = "Session/Local devices and resources/Disk drives/Disk drives/Use also disk drives that I plug in later"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.DiskDrives.DynamicDrives.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.DiskDrives.DynamicDrives.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.DiskDrives.DynamicDrives.ToString()
+			}
+		}
 		
 		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Local devices and resources/Devices"
+		If($Policy.ClientPolicy.Session.Devices.Enabled)
+		{
+			$txt = "Session/Local devices and resources/Devices/Devices/Allow devices redirection"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.Devices.RedirectDevices.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.Devices.RedirectDevices.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.Devices.RedirectDevices.ToString()
+			}
+
+			$txt = "Session/Local devices and resources/Devices/Devices/Choose which devices you would like to use during your remote session"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = "";
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				"",$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt ""
+			}
+
+			$txt = "                         Use all devices available"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.Devices.UseAllDevices.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.Devices.UseAllDevices.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting "`t`t`t`t`t`t`t`t`t`t`t`tUse all devices available" $Policy.ClientPolicy.Session.Devices.UseAllDevices.ToString()
+			}
+
+			$txt = "                         Use also devices that I plug in later"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.Devices.DynamicDevices.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.Devices.DynamicDevices.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting "`t`t`t`t`t`t`t`t`t`t    Use also devices that I plug in later" $Policy.ClientPolicy.Session.Devices.DynamicDevices.ToString()
+			}
+		}
 		
 		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Local devices and resources/Video capture devices"
+		#can't find
 		
 		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Local devices and resources/Ports"
+		If($Policy.ClientPolicy.Session.Ports.Enabled)
+		{
+			$txt = "Session/Local devices and resources/Ports/Allow LPT and COM ports redirection"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.Ports.RedirectCOMPorts.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.Ports.RedirectCOMPorts.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.Ports.RedirectCOMPorts.ToString()
+			}
+		}
 		
 		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Local devices and resources/Smart cards"
+		If($Policy.ClientPolicy.Session.SmartCards.Enabled)
+		{
+			$txt = "Session/Local devices and resources/Smart cards/Allow smart cards redirection"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.SmartCards.RedirectSmartCards.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.SmartCards.RedirectSmartCards.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.SmartCards.RedirectSmartCards.ToString()
+			}
+		}
 		
 		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Local devices and resources/Windows touch input"
+		If($Policy.ClientPolicy.Session.WindowsTouchInput.Enabled)
+		{
+			$txt = "Session/Local devices and resources/Windows touch input/Allow Windows touch input redirection"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.WindowsTouchInput.TouchInput.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.WindowsTouchInput.TouchInput.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.WindowsTouchInput.TouchInput.ToString()
+			}
+		}
 		
 		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Local devices and resources/File transfer"
+		If($Policy.ClientPolicy.Session.FileTransfer.Enabled)
+		{
+			$FileTransfer = ""
+			Switch($Policy.ClientPolicy.Session.FileTransfer.FileTransferMode)
+			{
+				"ClientToServer"	{$FileTransfer = "Client to server only"; Break}
+				"ServerToClient"	{$FileTransfer = "Server to client only"; Break}
+				"Bidirectional"		{$FileTransfer = "Bidirectional"; Break}
+				"None"				{$FileTransfer = "Disabled"; Break}
+				Default				{$FileTransfer = "File transfer/Allow file transfer mode not found: $($Policy.ClientPolicy.Session.FileTransfer.FileTransferMode)"; Break}
+			}
+
+			$txt = "Session/Local devices and resources/File transfer/Allow file transfer"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $FileTransfer;
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$FileTransfer,$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $FileTransfer
+			}
+		}
 		
 		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Experience"
 		
 		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Experience/Performance"
+		If($Policy.ClientPolicy.Session.Performance.Enabled)
+		{
+			$ConnSpeed = ""
+			Switch($Policy.ClientPolicy.Session.Performance.NetType)
+			{
+				"Modem"							{$ConnSpeed = "Modem (56Kbps)"; Break}
+				"LowSpeedBroadband"				{$ConnSpeed = "Low speed broadband (256 Kbps - 2 Mbps)"; Break}
+				"Satellite"						{$ConnSpeed = "Satellite (2 Mbps - 16 Mbps with high latency)"; Break}
+				"HighSpeedBroadband"			{$ConnSpeed = "High speed broadband (2 Mbps - 16 Mbps)"; Break}
+				"WAN"							{$ConnSpeed = "WAN (10 Mbps or higher with high latency)"; Break}
+				"LAN"							{$ConnSpeed = "LAN (10 Mbps or higher)"; Break}
+				"DetectConnectionQualityAuto"	{$ConnSpeed = "Detect connection quality automatically"; Break}
+				Default							{$ConnSpeed = "Performance/Choose your connection speed to optimize performance mode not found: $($Policy.ClientPolicy.Session.Performance.NetType)"; Break}
+			}
+
+			$txt = "Session/Experience/Performance/Performance/Choose your connection speed to optimize performance"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $ConnSpeed;
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$ConnSpeed,$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $ConnSpeed
+			}
+
+			If($Policy.ClientPolicy.Session.Performance.NetType -ne "DetectConnectionQualityAuto")
+			{
+				$txt = "Session/Experience/Performance/Performance/Desktop backgroup"
+				If($MSWord -or $PDF)
+				{
+					$SettingsWordTable += @{
+					Text = $txt;
+					Value = $Policy.ClientPolicy.Session.Performance.DesktopBackground.ToString();
+					}
+				}
+				If($HTML)
+				{
+					$rowdata += @(,(
+					$txt,$htmlbold,
+					$Policy.ClientPolicy.Session.Performance.DesktopBackground.ToString(),$htmlwhite))
+				}
+				If($Text)
+				{
+					OutputPolicySetting $txt $Policy.ClientPolicy.Session.Performance.DesktopBackground.ToString()
+				}
+
+				$txt = "Session/Experience/Performance/Performance/Font smoothing"
+				If($MSWord -or $PDF)
+				{
+					$SettingsWordTable += @{
+					Text = $txt;
+					Value = $Policy.ClientPolicy.Session.Performance.FontSmoothing.ToString();
+					}
+				}
+				If($HTML)
+				{
+					$rowdata += @(,(
+					$txt,$htmlbold,
+					$Policy.ClientPolicy.Session.Performance.FontSmoothing.ToString(),$htmlwhite))
+				}
+				If($Text)
+				{
+					OutputPolicySetting $txt $Policy.ClientPolicy.Session.Performance.FontSmoothing.ToString()
+				}
+
+				$txt = "Session/Experience/Performance/Performance/Menu and window animation"
+				If($MSWord -or $PDF)
+				{
+					$SettingsWordTable += @{
+					Text = $txt;
+					Value = $Policy.ClientPolicy.Session.Performance.WindowMenuAnimation.ToString();
+					}
+				}
+				If($HTML)
+				{
+					$rowdata += @(,(
+					$txt,$htmlbold,
+					$Policy.ClientPolicy.Session.Performance.WindowMenuAnimation.ToString(),$htmlwhite))
+				}
+				If($Text)
+				{
+					OutputPolicySetting $txt $Policy.ClientPolicy.Session.Performance.WindowMenuAnimation.ToString()
+				}
+
+				$txt = "Session/Experience/Performance/Performance/Desktop composition"
+				If($MSWord -or $PDF)
+				{
+					$SettingsWordTable += @{
+					Text = $txt;
+					Value = $Policy.ClientPolicy.Session.Performance.DesktopComposition.ToString();
+					}
+				}
+				If($HTML)
+				{
+					$rowdata += @(,(
+					$txt,$htmlbold,
+					$Policy.ClientPolicy.Session.Performance.DesktopComposition.ToString(),$htmlwhite))
+				}
+				If($Text)
+				{
+					OutputPolicySetting $txt $Policy.ClientPolicy.Session.Performance.DesktopComposition.ToString()
+				}
+
+				<#$txt = "Session/Experience/Performance/Performance/Show contents of window while dragging"
+				If($MSWord -or $PDF)
+				{
+					$SettingsWordTable += @{
+					Text = $txt;
+					Value = $Policy.ClientPolicy.Session.Performance.MoveSizeFullDrag.ToString();
+					}
+				}
+				If($HTML)
+				{
+					$rowdata += @(,(
+					$txt,$htmlbold,
+					$Policy.ClientPolicy.Session.Performance.MoveSizeFullDrag.ToString(),$htmlwhite))
+				}
+				If($Text)
+				{
+					OutputPolicySetting $txt $Policy.ClientPolicy.Session.Performance.MoveSizeFullDrag.ToString()
+				}#>
+
+				$txt = "Session/Experience/Performance/Performance/Themes"
+				If($MSWord -or $PDF)
+				{
+					$SettingsWordTable += @{
+					Text = $txt;
+					Value = $Policy.ClientPolicy.Session.Performance.Themes.ToString();
+					}
+				}
+				If($HTML)
+				{
+					$rowdata += @(,(
+					$txt,$htmlbold,
+					$Policy.ClientPolicy.Session.Performance.Themes.ToString(),$htmlwhite))
+				}
+				If($Text)
+				{
+					OutputPolicySetting $txt $Policy.ClientPolicy.Session.Performance.Themes.ToString()
+				}
+
+				$txt = "Session/Experience/Performance/Performance/Bitmap caching"
+				If($MSWord -or $PDF)
+				{
+					$SettingsWordTable += @{
+					Text = $txt;
+					Value = $Policy.ClientPolicy.Session.Performance.BitmapCaching.ToString();
+					}
+				}
+				If($HTML)
+				{
+					$rowdata += @(,(
+					$txt,$htmlbold,
+					$Policy.ClientPolicy.Session.Performance.BitmapCaching.ToString(),$htmlwhite))
+				}
+				If($Text)
+				{
+					OutputPolicySetting $txt $Policy.ClientPolicy.Session.Performance.BitmapCaching.ToString()
+				}
+			}
+
+			$txt = "Session/Experience/Performance/Performance/Optimize resizing/moving windows"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.Performance.MoveSizeFullDrag.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.Performance.MoveSizeFullDrag.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.Performance.MoveSizeFullDrag.ToString()
+			}
+		}
 		
 		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Experience/Compression"
+		If($Policy.ClientPolicy.Session.Compression.Enabled)
+		{
+			$txt = "Session/Experience/Compression/Choose your compress preferences to optimize performance"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.Compression.Compress.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.Compression.Compress.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.Compression.Compress.ToString()
+			}
+
+			$txt = "                         Enable RDP compression"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.Compression.Compress.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.Compression.Compress.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting "`t`t`t`t`t`t`t`t Enable RDP compression" $Policy.ClientPolicy.Session.Compression.Compress.ToString()
+			}
+
+			$PrintCompression = ""
+			Switch($Policy.ClientPolicy.Session.Compression.PrintingCompression)
+			{
+				"CompressionDisabled"		{$PrintCompression = "Compression disabled"; Break}
+				"BestSpeed"					{$PrintCompression = "Best speed (uses less CPU)"; Break}
+				"BestSize"					{$PrintCompression = "Best size (uses less network traffic)"; Break}
+				"BasedOnConnectionSpeed"	{$PrintCompression = "Based on connection speed"; Break}
+				Default						{$PrintCompression = "Universal printing compression policy not found: $($Policy.ClientPolicy.Session.Compression.PrintingCompression)"; Break}
+			}
+
+			$txt = "                         Universal printing compression policy"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $PrintCompression;
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$PrintCompression,$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting "`t`t`t`t`t`t  Universal printing compression policy" $PrintCompression
+			}
+
+			$ScanCompression = ""
+			Switch($Policy.ClientPolicy.Session.Compression.ScanningCompression)
+			{
+				"CompressionDisabled"		{$ScanCompression = "Compression disabled"; Break}
+				"BestSpeed"					{$ScanCompression = "Best speed (uses less CPU)"; Break}
+				"BestSize"					{$ScanCompression = "Best size (uses less network traffic)"; Break}
+				"BasedOnConnectionSpeed"	{$ScanCompression = "Based on connection speed"; Break}
+				Default						{$ScanCompression = "Universal scanning compression policy not found: $($Policy.ClientPolicy.Session.Compression.ScanningCompression)"; Break}
+			}
+
+			$txt = "                         Universal scanning compression policy"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $ScanCompression;
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$ScanCompression,$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting "`t`t`t`t`t`t  Universal scanning compression policy" $ScanCompression
+			}
+		}
 		
 		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Network"
+		If($Policy.ClientPolicy.Session.Network.Enabled)
+		{
+			If($Policy.ClientPolicy.Session.Network.UseProxyServer)
+			{
+				$txt = "Session/Network/Proxy settings/Use proxy server"
+
+				$ProxyServer = ""
+				Switch($Policy.ClientPolicy.Session.Network.ProxyType)
+				{
+					0	{$ProxyServer = "SOCKS4"; Break}
+					1	{$ProxyServer = "SOCKS4A"; Break}
+					2	{$ProxyServer = "SOCKS5"; Break}
+					3	{$ProxyServer = "HTTP 1.1"; Break}
+					Default	{$ProxyServer = "Use proxy server type not found: $()"; Break}
+				}
+				
+				If($MSWord -or $PDF)
+				{
+					$SettingsWordTable += @{
+					Text = $txt;
+					Value = $ProxyServer;
+					}
+				}
+				If($HTML)
+				{
+					$rowdata += @(,(
+					$txt,$htmlbold,
+					$ProxyServer,$htmlwhite))
+				}
+				If($Text)
+				{
+					OutputPolicySetting $txt $ProxyServer
+				}
+
+				$txt = "Session/Network/Proxy settings/Proxy Host"
+				If($MSWord -or $PDF)
+				{
+					$SettingsWordTable += @{
+					Text = $txt;
+					Value = $Policy.ClientPolicy.Session.Network.ProxyHost;
+					}
+				}
+				If($HTML)
+				{
+					$rowdata += @(,(
+					$txt,$htmlbold,
+					$Policy.ClientPolicy.Session.Network.ProxyHost,$htmlwhite))
+				}
+				If($Text)
+				{
+					OutputPolicySetting $txt $Policy.ClientPolicy.Session.Network.ProxyHost
+				}
+
+				$txt = "Session/Network/Proxy settings/Port"
+				If($MSWord -or $PDF)
+				{
+					$SettingsWordTable += @{
+					Text = $txt;
+					Value = $Policy.ClientPolicy.Session.Network.ProxyPort.ToString();
+					}
+				}
+				If($HTML)
+				{
+					$rowdata += @(,(
+					$txt,$htmlbold,
+					$Policy.ClientPolicy.Session.Network.ProxyPort.ToString(),$htmlwhite))
+				}
+				If($Text)
+				{
+					OutputPolicySetting $txt $Policy.ClientPolicy.Session.Network.ProxyPort.ToString()
+				}
+				
+				If($Policy.ClientPolicy.Session.Network.ProxyType -ge 2)
+				{
+					$txt = "Session/Network/Proxy authentication/Proxy requires authentication"
+					If($MSWord -or $PDF)
+					{
+						$SettingsWordTable += @{
+						Text = $txt;
+						Value = $Policy.ClientPolicy.Session.Network.ProxyAuthentication.ToString();
+						}
+					}
+					If($HTML)
+					{
+						$rowdata += @(,(
+						$txt,$htmlbold,
+						$Policy.ClientPolicy.Session.Network.ProxyAuthentication.ToString(),$htmlwhite))
+					}
+					If($Text)
+					{
+						OutputPolicySetting $txt $Policy.ClientPolicy.Session.Network.ProxyAuthentication.ToString()
+					}
+					
+					If($Policy.ClientPolicy.Session.Network.ProxyAuthentication)
+					{
+						$txt = "Session/Network/Proxy authentication/Use user logon credentials"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Policy.ClientPolicy.Session.Network.ProxyUseLogonCredentials.ToString();
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Policy.ClientPolicy.Session.Network.ProxyUseLogonCredentials.ToString(),$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Policy.ClientPolicy.Session.Network.ProxyUseLogonCredentials.ToString()
+						}
+						
+						If($Policy.ClientPolicy.Session.Network.ProxyUseLogonCredentials -eq $False)
+						{
+							$txt = "Session/Network/Proxy authentication/Username"
+							If($MSWord -or $PDF)
+							{
+								$SettingsWordTable += @{
+								Text = $txt;
+								Value = $Policy.ClientPolicy.Session.Network.ProxyUsername;
+								}
+							}
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								$Policy.ClientPolicy.Session.Network.ProxyUsername,$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt $Policy.ClientPolicy.Session.Network.ProxyUsername
+							}
+						}
+					}
+				}
+			}
+		}
 		
 		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Server authentication"
+		If($Policy.ClientPolicy.Session.ServerAuthentication.Enabled)
+		{
+			$AuthFail = ""
+			Switch($Policy.ClientPolicy.Session.ServerAuthentication.SessionAuthFailureAction)
+			{
+				"Connect"		{$AuthFail = "Connect"; Break}
+				"Warn"			{$AuthFail = "Warn"; Break}
+				"DoNotConnect"	{$AuthFail = "Do not connect)"; Break}
+				Default			{$AuthFail = "RD session host authentication/If authentication fails not found: $($Policy.ClientPolicy.Session.ServerAuthentication.SessionAuthFailureAction)"; Break}
+			}
+
+			$txt = "Session/Server authentication/RD session host authentication/If authentication fails"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $AuthFail;
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$AuthFail,$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $AuthFail
+			}
+		}
 		
 		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Advanced settings"
+		If($Policy.ClientPolicy.Session.AdvancedSettings.Enabled)
+		{
+			$txt = "Session/Advanced settings/Use client system colors"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.AdvancedSettings.UseClientColors.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.AdvancedSettings.UseClientColors.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.AdvancedSettings.UseClientColors.ToString()
+			}
+
+			$txt = "Session/Advanced settings/Use client system settings (border size, fonts, etc)"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.AdvancedSettings.UseClientSettings.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.AdvancedSettings.UseClientSettings.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.AdvancedSettings.UseClientSettings.ToString()
+			}
+
+			$txt = "Session/Advanced settings/Create shortcuts configured on server"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.AdvancedSettings.CreateShrtCut.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.AdvancedSettings.CreateShrtCut.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.AdvancedSettings.CreateShrtCut.ToString()
+			}
+
+			$txt = "Session/Advanced settings/Register file extensions associated from the server"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.AdvancedSettings.RegisterExt.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.AdvancedSettings.RegisterExt.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.AdvancedSettings.RegisterExt.ToString()
+			}
+
+			$txt = "Session/Advanced settings/Redirect URLs to the client device"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.AdvancedSettings.UrlRedirection.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.AdvancedSettings.UrlRedirection.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.AdvancedSettings.UrlRedirection.ToString()
+			}
+
+			$txt = "Session/Advanced settings/Redirect MAILTO to the client device"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.AdvancedSettings.MailRedirection.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.AdvancedSettings.MailRedirection.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.AdvancedSettings.MailRedirection.ToString()
+			}
+
+			$txt = "Session/Advanced settings/Always ask for credentials when starting applications"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.AdvancedSettings.CredAlwaysAsk.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.AdvancedSettings.CredAlwaysAsk.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.AdvancedSettings.CredAlwaysAsk.ToString()
+			}
+
+			$txt = "Session/Advanced settings/Allow server to send commands to be executed by client"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.AdvancedSettings.AllowSrvCmd.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.AdvancedSettings.AllowSrvCmd.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.AdvancedSettings.AllowSrvCmd.ToString()
+			}
+
+			$txt = "Session/Advanced settings/Confirm Server commands before executing them"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.AdvancedSettings.PromptSrvCmd.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.AdvancedSettings.PromptSrvCmd.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.AdvancedSettings.PromptSrvCmd.ToString()
+			}
+
+			$txt = "Session/Advanced settings/Network Level Authentication"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.AdvancedSettings.CredSSP.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.AdvancedSettings.CredSSP.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.AdvancedSettings.CredSSP.ToString()
+			}
+
+			$txt = "Session/Advanced settings/Redirect POS devices"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.AdvancedSettings.RedirPOS.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.AdvancedSettings.RedirPOS.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.AdvancedSettings.RedirPOS.ToString()
+			}
+
+			$txt = "Session/Advanced settings/Use Pre Windows 2000 login format"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.AdvancedSettings.Pre2000Cred.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.AdvancedSettings.Pre2000Cred.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.AdvancedSettings.Pre2000Cred.ToString()
+			}
+
+			$txt = "Session/Advanced settings/Disable RDP-UDP for gateway connections"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.AdvancedSettings.DisableRUDP.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.AdvancedSettings.DisableRUDP.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.AdvancedSettings.DisableRUDP.ToString()
+			}
+
+			$txt = "Session/Advanced settings/Do not show drive redirection dialog"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.AdvancedSettings.DoNotShowDriveRedirectionDl.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.AdvancedSettings.DoNotShowDriveRedirectionDl.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.AdvancedSettings.DoNotShowDriveRedirectionDl.ToString()
+			}
+		}
 		
 		Write-Verbose "$(Get-Date -Format G): `t`t`t`tClient options"
 		
