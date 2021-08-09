@@ -387,7 +387,7 @@
 	NAME: RAS_Inventory_V2.5.ps1
 	VERSION: 2.50
 	AUTHOR: Carl Webster
-	LASTEDIT: August 9, 2021 Update 8
+	LASTEDIT: August 9, 2021 Update 9
 #>
 
 
@@ -574,7 +574,23 @@ Param(
 #		Windows client/Branding
 #		Windows client/Messages
 #		Windows client/Custom menu
+#	Added to Gateway and Gateway Default Settings:
+#		Allow cross-origin resource sharing
+#			Domains for cross-origin resource sharing
+#			Browser cache time in months
+#		Clipboard redirection
+#		File Transfer Direction
+#		Use ciphers according to server preference
+#	Added to RD Session Host, RD Session Host Groups, and Default Site Settings:
+#		File Transfer Direction
+#		File Transfer Location
+#		File Transfer Do not allow to change location
+#	Fixed some text formatting issues
 #	In Certificates/General, moved Expiration date to before Common name
+#	In Published Resources, only show Associated File Extensions if the EnableFileExtensions property is True
+#		If you add file extensions and later disable file extensions, the extensions previously entered are still there
+#	Renamed in Gateway SSL/TLS HSTS settings "Max-age" to "Browse cache time in months"
+#	Removed the Restrictions label from Gateways/HTML5 as it is no longer in the console
 #	Updated Function GetVDIType with Hypervisor data for ESXi 7.0 and vCenter 7.0
 #
 #Version 2.10 25-Apr-2021
@@ -5432,6 +5448,9 @@ Function OutputSite
 						{
 							$RDSPreferredPublishingAgent = (Get-RASPA -Id $GroupDefaults.PreferredPAId -EA 0 4>$Null).Server
 						}
+						$RDSFileTransferMode                   = "Bidirectional"
+						$RDSFileTransferLocation               = "Default download location"
+						$RDSFileTransferChangeLocation         = "False"
 					}
 					Else
 					{
@@ -5485,6 +5504,24 @@ Function OutputSite
 								Default				{$RDSDragAndDrop = "Unable to determine Drag and drop: $($RDSDefaults.DragAndDropMode)"; Break}
 							}
 							
+							Switch ($RDSDefaults.FileTransferMode)
+							{
+								"Bidirectional"		{$RDSFileTransferMode = "Bidirectional"; Break}
+								"Disabled"			{$RDSFileTransferMode = "Disabled"; Break}
+								"ClientToServer"	{$RDSFileTransferMode = "Client to server only"; Break}
+								"ServerToClient"	{$RDSFileTransferMode = "Server to client only"; Break}
+								Default				{$RDSFileTransferMode = "Unable to determine File Transfer mode: $($RDSDefaults.FileTransferMode)"; Break}
+							}
+							If($RDSDefaults.FileTransferLocation -eq "")
+							{
+								$RDSFileTransferLocation = "Default download location"
+							}
+							Else
+							{
+								$RDSFileTransferLocation = $RDSDefaults.FileTransferLocation
+							}
+							$RDSFileTransferChangeLocation = $RDSDefaults.FileTransferLockLocation.ToString()
+
 							If($RDSDefaults.PreferredPAId -eq 0)
 							{
 								$RDSPreferredPublishingAgent = "Automatically"
@@ -5509,6 +5546,9 @@ Function OutputSite
 							$RDSAllowClientURLMailRedirection      = "Enabled"
 							$RDSSupportShellURLNamespaceObject     = "True"
 							$RDSDragAndDrop                        = "Bidirectional"
+							$RDSFileTransferMode                   = "Bidirectional"
+							$RDSFileTransferLocation               = "Default download location"
+							$RDSFileTransferChangeLocation         = "False"
 							$RDSPreferredPublishingAgent           = "Automatically"
 							$RDSAllowRemoteExec                    = "True"
 							$RDSUseRemoteApps                      = "False"
@@ -5565,6 +5605,24 @@ Function OutputSite
 						Default				{$RDSDragAndDrop = "Unable to determine Drag and drop: $($RDSHost.DragAndDropMode)"; Break}
 					}
 					
+					Switch ($RDSHost.FileTransferMode)
+					{
+						"Bidirectional"		{$RDSFileTransferMode = "Bidirectional"; Break}
+						"Disabled"			{$RDSFileTransferMode = "Disabled"; Break}
+						"ClientToServer"	{$RDSFileTransferMode = "Client to server only"; Break}
+						"ServerToClient"	{$RDSFileTransferMode = "Server to client only"; Break}
+						Default				{$RDSFileTransferMode = "Unable to determine File Transfer mode: $($RDSHost.FileTransferMode)"; Break}
+					}
+					If($RDSHost.FileTransferLocation -eq "")
+					{
+						$RDSFileTransferLocation = "Default download location"
+					}
+					Else
+					{
+						$RDSFileTransferLocation = $RDSHost.FileTransferLocation
+					}
+					$RDSFileTransferChangeLocation = $RDSHost.FileTransferLockLocation.ToString()
+
 					If($RDSHost.PreferredPAId -eq 0)
 					{
 						$RDSPreferredPublishingAgent = "Automatically"
@@ -5627,6 +5685,24 @@ Function OutputSite
 					Default				{$RDSDragAndDrop = "Unable to determine Drag and drop: $($RDSHost.DragAndDropMode)"; Break}
 				}
 				
+				Switch ($RDSHost.FileTransferMode)
+				{
+					"Bidirectional"		{$RDSFileTransferMode = "Bidirectional"; Break}
+					"Disabled"			{$RDSFileTransferMode = "Disabled"; Break}
+					"ClientToServer"	{$RDSFileTransferMode = "Client to server only"; Break}
+					"ServerToClient"	{$RDSFileTransferMode = "Server to client only"; Break}
+					Default				{$RDSFileTransferMode = "Unable to determine File Transfer mode: $($RDSHost.FileTransferMode)"; Break}
+				}
+				If($RDSHost.FileTransferLocation -eq "")
+				{
+					$RDSFileTransferLocation = "Default download location"
+				}
+				Else
+				{
+					$RDSFileTransferLocation = $RDSHost.FileTransferLocation
+				}
+				$RDSFileTransferChangeLocation = $RDSHost.FileTransferLockLocation.ToString()
+
 				If($RDSHost.PreferredPAId -eq 0)
 				{
 					$RDSPreferredPublishingAgent = "Automatically"
@@ -5658,6 +5734,10 @@ Function OutputSite
 				$ScriptInformation.Add(@{Data = "Use RemoteApp if available"; Value = $RDSUseRemoteApps; }) > $Null
 				$ScriptInformation.Add(@{Data = "Enable applications monitoring"; Value = $RDSEnableAppMonitoring; }) > $Null
 				$ScriptInformation.Add(@{Data = "Allow file transfer command (HTML5 and Chrome clients)"; Value = $RDSAllowFileTransfer; }) > $Null
+				$ScriptInformation.Add(@{Data = "Configure File Transfer"; Value = ""; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Direction"; Value = $RDSFileTransferMode; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Location"; Value = $RDSFileTransferLocation; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Do not allow to change location"; Value = $RDSFileTransferChangeLocation; }) > $Null
 				$ScriptInformation.Add(@{Data = "Enable drive redirection cache"; Value = $RDSEnableDriveRedirectionCache; }) > $Null
 
 				$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -5693,6 +5773,10 @@ Function OutputSite
 				Line 4 "Use RemoteApp if available`t`t`t`t: " $RDSUseRemoteApps
 				Line 4 "Enable applications monitoring`t`t`t`t: " $RDSEnableAppMonitoring
 				Line 4 "Allow file transfer command (HTML5 and Chrome clients)`t: " $RDSAllowFileTransfer
+				Line 4 "Configure File Transfer"
+				Line 5 "Direction`t`t`t: " $RDSFileTransferMode
+				Line 5 "Location`t`t`t: " $RDSFileTransferLocation
+				Line 5 "Do not allow to change location`t: " $RDSFileTransferChangeLocation
 				Line 4 "Enable drive redirection cache`t`t`t`t: " $RDSEnableDriveRedirectionCache
 				Line 0 ""
 			}
@@ -5712,6 +5796,10 @@ Function OutputSite
 				$rowdata += @(,("Use RemoteApp if available",($Script:htmlsb),$RDSUseRemoteApps,$htmlwhite))
 				$rowdata += @(,("Enable applications monitoring",($Script:htmlsb),$RDSEnableAppMonitoring,$htmlwhite))
 				$rowdata += @(,("Allow file transfer command (HTML5 and Chrome clients)",($Script:htmlsb),$RDSAllowFileTransfer,$htmlwhite))
+				$rowdata += @(,("Configure File Transfer",($Script:htmlsb),"",$htmlwhite))
+				$rowdata += @(,("     Direction",($Script:htmlsb),$RDSFileTransferMode,$htmlwhite))
+				$rowdata += @(,("     Location",($Script:htmlsb),$RDSFileTransferLocation,$htmlwhite))
+				$rowdata += @(,("     Do not allow to change location",($Script:htmlsb),$RDSFileTransferChangeLocation,$htmlwhite))
 				$rowdata += @(,("Enable drive redirection cache",($Script:htmlsb),$RDSEnableDriveRedirectionCache,$htmlwhite))
 
 				$msg = "Agent settings"
@@ -8282,6 +8370,24 @@ Function OutputSite
 						Default				{$RDSDragAndDrop = "Unable to determine Drag and drop: $($RDSDefaults.DragAndDropMode)"; Break}
 					}
 					
+					Switch ($RDSDefaults.FileTransferMode)
+					{
+						"Bidirectional"		{$RDSFileTransferMode = "Bidirectional"; Break}
+						"Disabled"			{$RDSFileTransferMode = "Disabled"; Break}
+						"ClientToServer"	{$RDSFileTransferMode = "Client to server only"; Break}
+						"ServerToClient"	{$RDSFileTransferMode = "Server to client only"; Break}
+						Default				{$RDSFileTransferMode = "Unable to determine File Transfer mode: $($RDSDefaults.FileTransferMode)"; Break}
+					}
+					If($RDSDefaults.FileTransferLocation -eq "")
+					{
+						$RDSFileTransferLocation = "Default download location"
+					}
+					Else
+					{
+						$RDSFileTransferLocation = $RDSDefaults.FileTransferLocation
+					}
+					$RDSFileTransferChangeLocation = $RDSDefaults.FileTransferLockLocation.ToString()
+
 					If($RDSDefaults.PreferredPAId -eq 0)
 					{
 						$RDSPreferredPublishingAgent = "Automatically"
@@ -8305,6 +8411,9 @@ Function OutputSite
 					$RDSAllowClientURLMailRedirection      = "Enabled"
 					$RDSSupportShellURLNamespaceObject     = "True"
 					$RDSDragAndDrop                        = "Bidirectional"
+					$RDSFileTransferMode                   = "Bidirectional"
+					$RDSFileTransferLocation               = "Default download location"
+					$RDSFileTransferChangeLocation         = "False"
 					$RDSPreferredPublishingAgent           = "Automatically"
 					$RDSAllowRemoteExec                    = "True"
 					$RDSUseRemoteApps                      = "False"
@@ -8390,6 +8499,10 @@ Function OutputSite
 				$ScriptInformation.Add(@{Data = "Use RemoteApp if available"; Value = $RDSUseRemoteApps; }) > $Null
 				$ScriptInformation.Add(@{Data = "Enable applications monitoring"; Value = $RDSEnableAppMonitoring; }) > $Null
 				$ScriptInformation.Add(@{Data = "Allow file transfer command (HTML5 and Chrome clients)"; Value = $RDSAllowFileTransfer; }) > $Null
+				$ScriptInformation.Add(@{Data = "Configure File Transfer"; Value = ""; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Direction"; Value = $RDSFileTransferMode; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Location"; Value = $RDSFileTransferLocation; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Do not allow to change location"; Value = $RDSFileTransferChangeLocation; }) > $Null
 
 				$Table = AddWordTable -Hashtable $ScriptInformation `
 				-Columns Data,Value `
@@ -8424,6 +8537,10 @@ Function OutputSite
 				Line 3 "Use RemoteApp if available`t`t`t`t: " $RDSUseRemoteApps
 				Line 3 "Enable applications monitoring`t`t`t`t: " $RDSEnableAppMonitoring
 				Line 3 "Allow file transfer command (HTML5 and Chrome clients)`t: " $RDSAllowFileTransfer
+				Line 3 "Configure File Transfer"
+				Line 4 "Direction`t`t`t: " $RDSFileTransferMode
+				Line 4 "Location`t`t`t: " $RDSFileTransferLocation
+				Line 4 "Do not allow to change location`t: " $RDSFileTransferChangeLocation
 				Line 0 ""
 			}
 			If($HTML)
@@ -8442,6 +8559,10 @@ Function OutputSite
 				$rowdata += @(,("Use RemoteApp if available",($Script:htmlsb),$RDSUseRemoteApps,$htmlwhite))
 				$rowdata += @(,("Enable applications monitoring",($Script:htmlsb),$RDSEnableAppMonitoring,$htmlwhite))
 				$rowdata += @(,("Allow file transfer command (HTML5 and Chrome clients)",($Script:htmlsb),$RDSAllowFileTransfer,$htmlwhite))
+				$rowdata += @(,("Configure File Transfer",($Script:htmlsb),"",$htmlwhite))
+				$rowdata += @(,("     Direction",($Script:htmlsb),$RDSFileTransferMode,$htmlwhite))
+				$rowdata += @(,("     Location",($Script:htmlsb),$RDSFileTransferLocation,$htmlwhite))
+				$rowdata += @(,("     Do not allow to change location",($Script:htmlsb),$RDSFileTransferChangeLocation,$htmlwhite))
 
 				$msg = "Agent settings"
 				$columnWidths = @("300","275")
@@ -11096,7 +11217,7 @@ Function OutputSite
 				Line 4 "Support Shell URL namespace objects`t`t`t: " $VDIHost.SupportShellURLNamespaceObjects.ToString()
 				Line 4 "Preferred Publishing Agent`t`t`t`t: " $VDIHostStatus.PreferredPA
 				Line 4 "Allow file transfer command (HTML5 and Chrome clients)`t: " $VDIHost.AllowFileTransfer.ToString()
-				Line 4 "Enable drive redirection cache`t`t`t: " $VDIHost.EnableDriveRedirectionCache.ToString()
+				Line 4 "Enable drive redirection cache`t`t`t`t: " $VDIHost.EnableDriveRedirectionCache.ToString()
 				Line 0 ""
 			}
 			If($HTML)
@@ -13825,6 +13946,7 @@ Function OutputSite
 					$GWEnableClientManagerPort                      = $GWDefaults.EnableClientManagerPort.ToString()
 					$GWClientManagerPort                            = "20009"
 					$GWEnableRDPDOSAttackFilter                     = $GWDefaults.DOSPro.ToString()
+					$GWCipherPreference                             = $GWDefaults.CipherPreference.ToString()
 				}
 				Else
 				{
@@ -13837,6 +13959,7 @@ Function OutputSite
 					$GWEnableClientManagerPort                      = "True"
 					$GWClientManagerPort                            = "20009"
 					$GWEnableRDPDOSAttackFilter                     = "True"
+					$GWCipherPreference                             = "True"
 				}
 			}
 			Else
@@ -13852,6 +13975,7 @@ Function OutputSite
 				$GWEnableClientManagerPort                      = $GW.EnableClientManagerPort.ToString()
 				$GWClientManagerPort                            = "20009"
 				$GWEnableRDPDOSAttackFilter                     = $GW.DOSPro.ToString()
+				$GWCipherPreference                             = $GW.CipherPreference.ToString()
 			}
 			
 			If($MSWord -or $PDF)
@@ -13949,7 +14073,7 @@ Function OutputSite
 				{
 					$ScriptInformation.Add(@{Data = "HSTS is on"; Value = ""; }) > $Null
 					$ScriptInformation.Add(@{Data = "Enforce HTTP strict transport security (HSTS)"; Value = $GWEnableHSTS; }) > $Null
-					$ScriptInformation.Add(@{Data = "Max-age"; Value = "$GWHSTSMaxage months"; }) > $Null
+					$ScriptInformation.Add(@{Data = "Browser caache time"; Value = "$GWHSTSMaxage months"; }) > $Null
 					$ScriptInformation.Add(@{Data = "Include subdomains"; Value = $GWHSTSIncludeSubdomains; }) > $Null
 					$ScriptInformation.Add(@{Data = "Preload"; Value = $GWHSTSPreload; }) > $Null
 				}
@@ -13959,6 +14083,7 @@ Function OutputSite
 				$ScriptInformation.Add(@{Data = "Accepted SSL Versions"; Value = $GWAcceptedSSLVersions; }) > $Null
 				$ScriptInformation.Add(@{Data = "Cipher Strength"; Value = $GWCipherStrength; }) > $Null
 				$ScriptInformation.Add(@{Data = "Cipher"; Value = $GWCipher; }) > $Null
+				$ScriptInformation.Add(@{Data = "Use ciphers according to server preference"; Value = $GWCipherPreference; }) > $Null
 				$ScriptInformation.Add(@{Data = "Certificates"; Value = $GWCertificates; }) > $Null
 
 				$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -13981,7 +14106,7 @@ Function OutputSite
 			}
 			If($Text)
 			{
-				Line 3 "Inherit default settings`t`t: " $GW.InheritDefaultSslTlsSettings.ToString()
+				Line 3 "Inherit default settings`t`t  : " $GW.InheritDefaultSslTlsSettings.ToString()
 
 				If($GWEnableHSTS -eq "False")
 				{
@@ -13990,18 +14115,19 @@ Function OutputSite
 				Else
 				{
 					Line 3 "HSTS is on"
-					Line 3 "Enforce HTTP strict transport security`t: " $GWEnableHSTS
-					Line 3 "Max-age`t`t`t`t`t: " "$GWHSTSMaxage months"
-					Line 3 "Include subdomains`t`t`t: " $GWHSTSIncludeSubdomains
-					Line 3 "Preload`t`t`t`t`t: " $GWHSTSPreload
+					Line 3 "Enforce HTTP strict transport security`t  : " $GWEnableHSTS
+					Line 3 "Browser caache time`t`t`t  : " "$GWHSTSMaxage months"
+					Line 3 "Include subdomains`t`t`t  : " $GWHSTSIncludeSubdomains
+					Line 3 "Preload`t`t`t`t`t  : " $GWHSTSPreload
 				}
 
-				Line 3 "Enable SSL`t`t`t`t: " $GWEnableSSL
-				Line 3 "on Port`t`t`t`t`t: " $GWEnableSSLOnPort
-				Line 3 "Accepted SSL Versions`t`t`t: " $GWAcceptedSSLVersions
-				Line 3 "Cipher Strength`t`t`t`t: " $GWCipherStrength
-				Line 3 "Cipher`t`t`t`t`t: " $GWCipher
-				Line 3 "Certificates`t`t`t`t: " $GWCertificates
+				Line 3 "Enable SSL`t`t`t`t  : " $GWEnableSSL
+				Line 3 "on Port`t`t`t`t`t  : " $GWEnableSSLOnPort
+				Line 3 "Accepted SSL Versions`t`t`t  : " $GWAcceptedSSLVersions
+				Line 3 "Cipher Strength`t`t`t`t  : " $GWCipherStrength
+				Line 3 "Cipher`t`t`t`t`t  : " $GWCipher
+				Line 3 "Use ciphers according to server preference: " $GWCipherPreference
+				Line 3 "Certificates`t`t`t`t  : " $GWCertificates
 				Line 0 ""
 			}
 			If($HTML)
@@ -14017,7 +14143,7 @@ Function OutputSite
 				{
 					$rowdata += @(,("HSTS is on",($Script:htmlsb),,$htmlwhite))
 					$rowdata += @(,("Enforce HTTP strict transport security (HSTS)",($Script:htmlsb),$GWEnableHSTS,$htmlwhite))
-					$rowdata += @(,("Max-age",($Script:htmlsb),"$GWHSTSMaxage months",$htmlwhite))
+					$rowdata += @(,("Browser caache time",($Script:htmlsb),"$GWHSTSMaxage months",$htmlwhite))
 					$rowdata += @(,("Include subdomains",($Script:htmlsb),$GWHSTSIncludeSubdomains,$htmlwhite))
 					$rowdata += @(,("Preload",($Script:htmlsb),$GWHSTSPreload,$htmlwhite))
 				}
@@ -14027,6 +14153,7 @@ Function OutputSite
 				$rowdata += @(,("Accepted SSL Versions",($Script:htmlsb),$GWAcceptedSSLVersions,$htmlwhite))
 				$rowdata += @(,("Cipher Strength",($Script:htmlsb),$GWCipherStrength,$htmlwhite))
 				$rowdata += @(,("Cipher",($Script:htmlsb),$GWCipher,$htmlwhite))
+				$rowdata += @(,("Use ciphers according to server preference",($Script:htmlsb),$GWCipherPreference,$htmlwhite))
 				$rowdata += @(,("Certificates",($Script:htmlsb),$GWCertificates,$htmlwhite))
 
 				$msg = "SSL/TLS"
@@ -14070,12 +14197,33 @@ Function OutputSite
 						Default						{$GWLaunchSessionsUsing = "Unable to determine Launch sessions using: $($GWDefaults.LaunchMethod)"; Break}
 					}
 					
+					Switch ($GWDefaults.FileTransferMode)
+					{
+						"Bidirectional"		{$GWFileTransferMode = "Bidirectional"; Break}
+						"Disabled"			{$GWFileTransferMode = "Disabled"; Break}
+						"ClientToServer"	{$GWFileTransferMode = "Client to server only"; Break}
+						"ServerToClient"	{$GWFileTransferMode = "Server to client only"; Break}
+						Default				{$GWFileTransferMode = "Unable to determine File Transfer mode: $($GWDefaults.FileTransferMode)"; Break}
+					}
+
+					Switch ($GWDefaults.ClipboardDirection)
+					{
+						"Bidirectional"		{$GWClipboardTransferMode = "Bidirectional"; Break}
+						"Disabled"			{$GWClipboardTransferMode = "Disabled"; Break}
+						"ClientToServer"	{$GWClipboardTransferMode = "Client to server only"; Break}
+						"ServerToClient"	{$GWClipboardTransferMode = "Server to client only"; Break}
+						Default				{$GWClipboardTransferMode = "Unable to determine Clipboard mode: $($GWDefaults.ClipboardDirection)"; Break}
+					}
+
 					$GWAllowLaunchMethod          = $GWDefaults.AllowLaunchMethod.ToString()
 					$GWAllowAppsInNewTab          = $GWDefaults.AllowAppsInNewTab.ToString()
 					$GWUsePreWin2000LoginFormat   = $GWDefaults.UsePreWin2000LoginFormat.ToString()
 					$GWAllowEmbed                 = $GWDefaults.AllowEmbed.ToString()
 					$GWAllowFileTransfer          = $GWDefaults.AllowFileTransfer.ToString()
 					$GWAllowClipboard             = $GWDefaults.AllowClipboard.ToString()
+					$GWAllowCORS                  = $GWDefaults.AllowCORS
+					$GWAllowedDomainsForCORS      = $GWDefaults.AllowedDomainsForCORS
+					$GWBrowserCacheTimeInMonths   = $GWDefaults.BrowserCacheTimeInMonths
 					$GWEnableAlternateNLBHostname = $GWDefaults.EnableAlternateNLBHost.ToString()
 					$GWAlternameNLBHostname       = $GWDefaults.AlternateNLBHost
 					$GWEnableAlternateNLBPort     = $GWDefaults.EnableAlternateNLBPort.ToString()
@@ -14092,10 +14240,15 @@ Function OutputSite
 					$GWAllowEmbed                 = "False"
 					$GWAllowFileTransfer          = "True"
 					$GWAllowClipboard             = "True"
+					$GWAllowCORS                  = "False"
+					$GWAllowedDomainsForCORS      = @()
+					$GWBrowserCacheTimeInMonths   = 12
 					$GWEnableAlternateNLBHostname = "False"
 					$GWAlternameNLBHostname       = ""
 					$GWEnableAlternateNLBPort     = "False"
 					$GWAlternateNLBPort           = "8443"
+					$GWClipboardTransferMode      = "Bidirectional"
+					$GWClipboardTransferMode      = "Bidirectional"
 				}
 			}
 			Else
@@ -14112,12 +14265,33 @@ Function OutputSite
 					Default						{$GWLaunchSessionsUsing = "Unable to determine Launch sessions using: $($GW.LaunchMethod)"; Break}
 				}
 				
+				Switch ($GW.FileTransferMode)
+				{
+					"Bidirectional"		{$GWFileTransferMode = "Bidirectional"; Break}
+					"Disabled"			{$GWFileTransferMode = "Disabled"; Break}
+					"ClientToServer"	{$GWFileTransferMode = "Client to server only"; Break}
+					"ServerToClient"	{$GWFileTransferMode = "Server to client only"; Break}
+					Default				{$GWFileTransferMode = "Unable to determine File Transfer mode: $($GW.FileTransferMode)"; Break}
+				}
+
+				Switch ($GW.ClipboardDirection)
+				{
+					"Bidirectional"		{$GWClipboardTransferMode = "Bidirectional"; Break}
+					"Disabled"			{$GWClipboardTransferMode = "Disabled"; Break}
+					"ClientToServer"	{$GWClipboardTransferMode = "Client to server only"; Break}
+					"ServerToClient"	{$GWClipboardTransferMode = "Server to client only"; Break}
+					Default				{$GWClipboardTransferMode = "Unable to determine Clipboard mode: $($GW.ClipboardDirection)"; Break}
+				}
+
 				$GWAllowLaunchMethod          = $GW.AllowLaunchMethod.ToString()
 				$GWAllowAppsInNewTab          = $GW.AllowAppsInNewTab.ToString()
 				$GWUsePreWin2000LoginFormat   = $GW.UsePreWin2000LoginFormat.ToString()
 				$GWAllowEmbed                 = $GW.AllowEmbed.ToString()
-				$GWAllowFileTransfer          = $GW.AllowFileTransfer.ToString()
-				$GWAllowClipboard             = $GW.AllowClipboard.ToString()
+				$GWAllowFileTransfer          = $GW.AllowFileTransfer
+				$GWAllowClipboard             = $GW.AllowClipboard
+				$GWAllowCORS                  = $GW.AllowCORS
+				$GWAllowedDomainsForCORS      = $GW.AllowedDomainsForCORS
+				$GWBrowserCacheTimeInMonths   = $GW.BrowserCacheTimeInMonths
 				$GWEnableAlternateNLBHostname = $GW.EnableAlternateNLBHost.ToString()
 				$GWAlternameNLBHostname       = $GW.AlternateNLBHost
 				$GWEnableAlternateNLBPort     = $GW.EnableAlternateNLBPort.ToString()
@@ -14134,10 +14308,40 @@ Function OutputSite
 				$ScriptInformation.Add(@{Data = "     Allow user to select a launch method"; Value = $GWAllowLaunchMethod; }) > $Null
 				$ScriptInformation.Add(@{Data = "     Allow opening applications in a new tab"; Value = $GWAllowAppsInNewTab; }) > $Null
 				$ScriptInformation.Add(@{Data = "     Use Pre Windows 2000 login format"; Value = $GWUsePreWin2000LoginFormat; }) > $Null
-				$ScriptInformation.Add(@{Data = "Restrictions"; Value = ""; }) > $Null
 				$ScriptInformation.Add(@{Data = "     Allow embedding of Parallels HTML5 Client into other web pages"; Value = $GWAllowEmbed; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Allow file transfer command"; Value = $GWAllowFileTransfer; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Allow clipboard command"; Value = $GWAllowClipboard; }) > $Null
+
+				$ScriptInformation.Add(@{Data = "     Allow file transfer command"; Value = $GWAllowFileTransfer.ToString(); }) > $Null
+				If($GWAllowFileTransfer)
+				{
+					$ScriptInformation.Add(@{Data = "     Direction"; Value = $GWFileTransferMode; }) > $Null
+				}
+
+				$ScriptInformation.Add(@{Data = "     Allow clipboard command"; Value = $GWAllowClipboard.ToString(); }) > $Null
+				If($GWAllowClipboard)
+				{
+					$ScriptInformation.Add(@{Data = "     Clipboard Redirection"; Value = $GWClipboardTransferMode; }) > $Null
+				}
+
+				$ScriptInformation.Add(@{Data = "     Allow cross-origin resource sharing"; Value = $GWAllowCORS.ToString(); }) > $Null
+				If($GWAllowCORS)
+				{
+					$cnt=-1
+					ForEach($Domain in $GWAllowedDomainsForCORS)
+					{
+						$cnt++
+						
+						If($cnt -eq 0)
+						{
+							$ScriptInformation.Add(@{Data = "     Allow domains"; Value = $Domain; }) > $Null
+						}
+						Else
+						{
+							$ScriptInformation.Add(@{Data = ""; Value = $Domain; }) > $Null
+						}
+					}
+					$ScriptInformation.Add(@{Data = "     Browser cache time"; Value = "$($GWBrowserCacheTimeInMonths.ToString()) months"; }) > $Null
+				}
+
 				$ScriptInformation.Add(@{Data = "Network Load Balancer access"; Value = ""; }) > $Null
 				$ScriptInformation.Add(@{Data = "     Use alternate hostname"; Value = $GWEnableAlternateNLBHostname; }) > $Null
 				If($GWEnableAlternateNLBHostname -eq "True")
@@ -14170,22 +14374,48 @@ Function OutputSite
 			}
 			If($Text)
 			{
-				Line 3 "Inherit default settings`t`t: " $GW.InheritDefaultHTML5Settings.ToString()
-				Line 3 "Enable HTML5 Client`t`t`t: " $GWEnableHTML5Client
+				Line 3 "Inherit default settings`t`t`t: " $GW.InheritDefaultHTML5Settings.ToString()
+				Line 3 "Enable HTML5 Client`t`t`t`t: " $GWEnableHTML5Client
 				Line 3 "Client" ""
-				Line 4 "Launch sessions using`t`t: " $GWLaunchSessionsUsing
-				Line 4 "Allow user to select "
-				Line 4 "a launch method`t`t`t: " $GWAllowLaunchMethod
-				Line 4 "Allow opening applications "
-				Line 4 "in a new tab`t`t`t: " $GWAllowAppsInNewTab
-				Line 4 "Use Pre Windows 2000 "
-				Line 4 "login format`t`t`t: " $GWUsePreWin2000LoginFormat
-				Line 3 "Restrictions" ""
-				Line 4 "Allow embedding of Parallels "
-				Line 4 "HTML5 Client into other "
-				Line 4 "web pages`t`t`t: " $GWAllowEmbed
-				Line 4 "Allow file transfer command`t: " $GWAllowFileTransfer
-				Line 4 "Allow clipboard command`t`t: " $GWAllowClipboard
+				Line 4 "Launch sessions using`t`t`t: " $GWLaunchSessionsUsing
+				Line 4 "Allow user to select a launch method`t: " $GWAllowLaunchMethod
+				Line 4 "Allow opening applications in a new tab`t: " $GWAllowAppsInNewTab
+				Line 4 "Use Pre Windows 2000 login format`t: " $GWUsePreWin2000LoginFormat
+				Line 4 "Allow embedding of Parallels HTML5"
+				Line 4 "Client into other web pages`t`t: " $GWAllowEmbed
+
+				Line 4 "Allow file transfer command`t`t: " $GWAllowFileTransfer.ToString()
+				If($GW.AllowFileTransfer)
+				{
+					Line 4 "Direction: " $GWFileTransferMode
+				}
+
+				Line 4 "Allow clipboard command`t`t`t: " $GWAllowClipboard.ToString()
+				If($GW.AllowClipboard)
+				{
+					Line 4 "Clipboard Redirection: " $GWClipboardTransferMode
+				}
+
+				Line 4 "Allow cross-origin resource sharing`t: " $GWAllowCORS.ToString()
+				If($GWAllowCORS)
+				{
+					$cnt=-1
+					ForEach($Domain in $GWAllowedDomainsForCORS)
+					{
+						$cnt++
+						
+						If($cnt -eq 0)
+						{
+							Line 7 "Allow domains   : " $Domain
+						}
+						Else
+						{
+							Line 9 "  " $Domain
+						}
+					}
+					Line 6 "Browser cache time      : " "$($GWBrowserCacheTimeInMonths.ToString()) months"
+				}
+
 				Line 3 "Network Load Balancer access" ""
 				Line 4 "Use alternate hostname`t`t: " $GWEnableAlternateNLBHostname
 				If($GWEnableAlternateNLBHostname -eq "True")
@@ -14209,10 +14439,40 @@ Function OutputSite
 				$rowdata += @(,("     Allow user to select a launch method",($Script:htmlsb),$GWAllowLaunchMethod,$htmlwhite))
 				$rowdata += @(,("     Allow opening applications in a new tab",($Script:htmlsb),$GWAllowAppsInNewTab,$htmlwhite))
 				$rowdata += @(,("     Use Pre Windows 2000 login format",($Script:htmlsb),$GWUsePreWin2000LoginFormat,$htmlwhite))
-				$rowdata += @(,("Restrictions",($Script:htmlsb),"",$htmlwhite))
 				$rowdata += @(,("     Allow embedding of Parallels HTML5 Client into other web pages",($Script:htmlsb),$GWAllowEmbed,$htmlwhite))
-				$rowdata += @(,("     Allow file transfer command",($Script:htmlsb),$GWAllowFileTransfer,$htmlwhite))
-				$rowdata += @(,("     Allow clipboard command",($Script:htmlsb),$GWAllowClipboard,$htmlwhite))
+
+				$rowdata += @(,("     Allow file transfer command",($Script:htmlsb),$GWAllowFileTransfer.ToString(),$htmlwhite))
+				If($GW.AllowFileTransfer)
+				{
+					$rowdata += @(,("     Direction",($Script:htmlsb),$GWFileTransferMode,$htmlwhite))
+				}
+
+				$rowdata += @(,("     Allow clipboard command",($Script:htmlsb),$GWAllowClipboard.ToString(),$htmlwhite))
+				If($GW.AllowClipboard)
+				{
+					$rowdata += @(,("     Clipboard Redirection",($Script:htmlsb),$GWClipboardTransferMode,$htmlwhite))
+				}
+
+				$rowdata += @(,("     Allow cross-origin resource sharing",($Script:htmlsb),$GWAllowCORS.ToString(),$htmlwhite))
+				If($GWAllowCORS)
+				{
+					$cnt=-1
+					ForEach($Domain in $GWAllowedDomainsForCORS)
+					{
+						$cnt++
+						
+						If($cnt -eq 0)
+						{
+							$rowdata += @(,("     Allow domains",($Script:htmlsb),$Domain,$htmlwhite))
+						}
+						Else
+						{
+							$rowdata += @(,("",($Script:htmlsb),$Domain,$htmlwhite))
+						}
+					}
+					$rowdata += @(,("     Browser cache time",($Script:htmlsb),"$($GWBrowserCacheTimeInMonths.ToString()) months",$htmlwhite))
+				}
+
 				$rowdata += @(,("Network Load Balancer access",($Script:htmlsb),"",$htmlwhite))
 				$rowdata += @(,("     Use alternate hostname",($Script:htmlsb),$GWEnableAlternateNLBHostname,$htmlwhite))
 				If($GWEnableAlternateNLBHostname -eq "True")
@@ -15785,14 +16045,14 @@ Function OutputSite
 						
 						If($cnt -eq 0)
 						{
-							Line 4 "Allow domains`t`t`t`t: " $Domain
+							Line 5 "Allow domains`t`t`t: " $Domain
 						}
 						Else
 						{
 							Line 9 "  " $Domain
 						}
 					}
-					Line 4 "Browser cache time $($Theme.HTML5Client.Gateway.BrowserCacheTimeInMonths.ToString()) months"
+					Line 5 "Browser cache time`t`t: "  "$($Theme.HTML5Client.Gateway.BrowserCacheTimeInMonths.ToString()) months"
 				}
 
 				Line 0 ""
@@ -20200,18 +20460,21 @@ Function OutputPublishingSettings
 				$ScriptInformation = New-Object System.Collections.ArrayList
 				$ScriptInformation.Add(@{Data = "Associate File Extensions"; Value = $PubItem.EnableFileExtensions.ToString(); }) > $Null
 
-				$cnt = -1
-				ForEach($Item in $PubItem.FileExtensions)
+				If($PubItem.EnableFileExtensions)
 				{
-					$cnt++
-					
-					If($cnt -eq 0)
+					$cnt = -1
+					ForEach($Item in $PubItem.FileExtensions)
 					{
-						$ScriptInformation.Add(@{Data = "Extension"; Value = $Item; }) > $Null
-					}
-					Else
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
+						$cnt++
+						
+						If($cnt -eq 0)
+						{
+							$ScriptInformation.Add(@{Data = "Extension"; Value = $Item; }) > $Null
+						}
+						Else
+						{
+							$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
+						}
 					}
 				}
 				$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $PubItem.ReplicateFileExtensionSettings.ToString(); }) > $Null
@@ -20362,7 +20625,7 @@ Function OutputPublishingSettings
 					Line 3 "Associate the following file extensions"
 					ForEach($Item in $PubItem.FileExtensions)
 					{
-						Line 10 $Item
+						Line 10 "  " $Item
 					}
 				}
 				
@@ -20661,17 +20924,20 @@ Function OutputPublishingSettings
 				Line 2 "File extensions"
 				Line 3 "Associate File Extensions`t`t`t`t: " $PubItem.EnableFileExtensions.ToString()
 
-				$cnt = -1
-				ForEach($Item in $PubItem.FileExtensions)
+				If($PubItem.EnableFileExtensions)
 				{
-					$cnt++
-					If($cnt -eq 0 )
+					$cnt = -1
+					ForEach($Item in $PubItem.FileExtensions)
 					{
-						Line 8 "Extension:`t" $Item
-					}
-					Else
-					{
-						Line 10 $Item
+						$cnt++
+						If($cnt -eq 0 )
+						{
+							Line 8 "Extension:`t" $Item
+						}
+						Else
+						{
+							Line 10 $Item
+						}
 					}
 				}
 				Line 3 "Settings are replicated to all Sites`t`t`t: " $PubItem.ReplicateFileExtensionSettings.ToString()
@@ -21120,18 +21386,21 @@ Function OutputPublishingSettings
 				$rowdata = @()
 				$columnHeaders = @("Associate File Extensions",($Script:htmlsb),$PubItem.EnableFileExtensions.ToString(),$htmlwhite)
 				
-				$cnt = -1
-				ForEach($Item in $PubItem.FileExtensions)
+				If($PubItem.EnableFileExtensions)
 				{
-					$cnt++
-					
-					If($cnt -eq 0)
+					$cnt = -1
+					ForEach($Item in $PubItem.FileExtensions)
 					{
-						$rowdata += @(,("Extension",($Script:htmlsb),$Item,$htmlwhite))
-					}
-					Else
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
+						$cnt++
+						
+						If($cnt -eq 0)
+						{
+							$rowdata += @(,("Extension",($Script:htmlsb),$Item,$htmlwhite))
+						}
+						Else
+						{
+							$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
+						}
 					}
 				}
 				$rowdata += @(,("Settings are replicated to all Sites: ",($Script:htmlsb),$PubItem.ReplicateFileExtensionSettings.ToString(),$htmlwhite))
@@ -24442,18 +24711,21 @@ Function OutputPublishingSettings
 				$ScriptInformation = New-Object System.Collections.ArrayList
 				$ScriptInformation.Add(@{Data = "Associate File Extensions"; Value = $PubItem.EnableFileExtensions.ToString(); }) > $Null
 
-				$cnt = -1
-				ForEach($Item in $PubItem.FileExtensions)
+				If($PubItem.EnableFileExtensions)
 				{
-					$cnt++
-					
-					If($cnt -eq 0)
+					$cnt = -1
+					ForEach($Item in $PubItem.FileExtensions)
 					{
-						$ScriptInformation.Add(@{Data = "Extension"; Value = $Item; }) > $Null
-					}
-					Else
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
+						$cnt++
+						
+						If($cnt -eq 0)
+						{
+							$ScriptInformation.Add(@{Data = "Extension"; Value = $Item; }) > $Null
+						}
+						Else
+						{
+							$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
+						}
 					}
 				}
 
@@ -24959,17 +25231,20 @@ Function OutputPublishingSettings
 				Line 2 "File extensions"
 				Line 3 "Associate File Extensions`t`t`t`t: " $PubItem.EnableFileExtensions.ToString()
 
-				$cnt = -1
-				ForEach($Item in $PubItem.FileExtensions)
+				If($PubItem.EnableFileExtensions)
 				{
-					$cnt++
-					If($cnt -eq 0 )
+					$cnt = -1
+					ForEach($Item in $PubItem.FileExtensions)
 					{
-						Line 8 "Extension:`t" $Item
-					}
-					Else
-					{
-						Line 10 $Item
+						$cnt++
+						If($cnt -eq 0 )
+						{
+							Line 8 "Extension:`t" $Item
+						}
+						Else
+						{
+							Line 10 $Item
+						}
 					}
 				}
 				Line 3 "Settings are replicated to all Sites`t`t`t: " $PubItem.ReplicateFileExtensionSettings.ToString()
@@ -25411,18 +25686,21 @@ Function OutputPublishingSettings
 				$rowdata = @()
 				$columnHeaders = @("Associate File Extensions",($Script:htmlsb),$PubItem.EnableFileExtensions.ToString(),$htmlwhite)
 				
-				$cnt = -1
-				ForEach($Item in $PubItem.FileExtensions)
+				If($PubItem.EnableFileExtensions)
 				{
-					$cnt++
-					
-					If($cnt -eq 0)
+					$cnt = -1
+					ForEach($Item in $PubItem.FileExtensions)
 					{
-						$rowdata += @(,("Extension",($Script:htmlsb),$Item,$htmlwhite))
-					}
-					Else
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
+						$cnt++
+						
+						If($cnt -eq 0)
+						{
+							$rowdata += @(,("Extension",($Script:htmlsb),$Item,$htmlwhite))
+						}
+						Else
+						{
+							$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
+						}
 					}
 				}
 
@@ -30588,6 +30866,7 @@ Function OutputPoliciesSummary
 		{
 			$ScriptInformation = New-Object System.Collections.ArrayList
 			$ScriptInformation.Add(@{Data = "Name"; Value = $Policy.Name; }) > $Null
+			$ScriptInformation.Add(@{Data = "Enabled"; Value = $Policy.Enabled; }) > $Null
 			$ScriptInformation.Add(@{Data = "Version"; Value = $Policy.Version; }) > $Null
 			
 			If($Categories.Count -eq 0)
@@ -30645,6 +30924,7 @@ Function OutputPoliciesSummary
 		If($Text)
 		{
 			Line 2 "Name`t`t`t: " $Policy.Name
+			Line 2 "Enabled`t`t`t: " $Policy.Enabled
 			Line 2 "Version`t`t`t: " $Policy.Version
 			
 			If($Categories.Count -eq 0)
@@ -30686,6 +30966,7 @@ Function OutputPoliciesSummary
 		{
 			$rowdata = @()
 			$columnHeaders = @("Name",($Script:htmlsb),$Policy.Name,$htmlwhite)
+			$rowdata += @(,("Enabled",($Script:htmlsb),$Policy.Enabled,$htmlwhite))
 			$rowdata += @(,("Version",($Script:htmlsb),$Policy.Version,$htmlwhite))
 			
 			If($Categories.Count -eq 0)
@@ -30894,6 +31175,7 @@ Function OutputPoliciesDetails
 
 		If($MSWord -or $PDF)
 		{
+			WriteWordLine 4 0 "Criteria"
 			$ScriptInformation = New-Object System.Collections.ArrayList
 			$ScriptInformation.Add(@{Data = "Policy/Criteria/Gateway criteria/Apply policy"; Value = $GWType; }) > $Null
 			If($Policy.GWRule -ne "AnyGW")
@@ -30913,13 +31195,13 @@ Function OutputPoliciesDetails
 				}
 			}
 
-			$ScriptInformation.Add(@{Data = "Policy/Criteria/Parallels client criteris/Windows"; Value = $Policy.AllowedOSes.Windows.ToString(); }) > $Null
-			$ScriptInformation.Add(@{Data = "Policy/Criteria/Parallels client criteris/iOS"; Value = $Policy.AllowedOSes.iOS.ToString(); }) > $Null
-			$ScriptInformation.Add(@{Data = "Policy/Criteria/Parallels client criteris/HTML5"; Value = $Policy.AllowedOSes.HTML5.ToString(); }) > $Null
-			$ScriptInformation.Add(@{Data = "Policy/Criteria/Parallels client criteris/macOS"; Value = $Policy.AllowedOSes.Mac.ToString(); }) > $Null
-			$ScriptInformation.Add(@{Data = "Policy/Criteria/Parallels client criteris/Android"; Value = $Policy.AllowedOSes.Android.ToString(); }) > $Null
-			$ScriptInformation.Add(@{Data = "Policy/Criteria/Parallels client criteris/Chrome"; Value = $Policy.AllowedOSes.Chrome.ToString(); }) > $Null
-			$ScriptInformation.Add(@{Data = "Policy/Criteria/Parallels client criteris/Linux"; Value = $Policy.AllowedOSes.Linux.ToString(); }) > $Null
+			$ScriptInformation.Add(@{Data = "Policy/Criteria/Parallels client criteria/Windows"; Value = $Policy.AllowedOSes.Windows.ToString(); }) > $Null
+			$ScriptInformation.Add(@{Data = "Policy/Criteria/Parallels client criteria/iOS"; Value = $Policy.AllowedOSes.iOS.ToString(); }) > $Null
+			$ScriptInformation.Add(@{Data = "Policy/Criteria/Parallels client criteria/HTML5"; Value = $Policy.AllowedOSes.HTML5.ToString(); }) > $Null
+			$ScriptInformation.Add(@{Data = "Policy/Criteria/Parallels client criteria/macOS"; Value = $Policy.AllowedOSes.Mac.ToString(); }) > $Null
+			$ScriptInformation.Add(@{Data = "Policy/Criteria/Parallels client criteria/Android"; Value = $Policy.AllowedOSes.Android.ToString(); }) > $Null
+			$ScriptInformation.Add(@{Data = "Policy/Criteria/Parallels client criteria/Chrome"; Value = $Policy.AllowedOSes.Chrome.ToString(); }) > $Null
+			$ScriptInformation.Add(@{Data = "Policy/Criteria/Parallels client criteria/Linux"; Value = $Policy.AllowedOSes.Linux.ToString(); }) > $Null
 
 			$Table = AddWordTable -Hashtable $ScriptInformation `
 			-Columns Data,Value `
@@ -30941,6 +31223,8 @@ Function OutputPoliciesDetails
 		}
 		If($Text)
 		{
+			Line 2 "Criteria"
+			Line 0 ""
 			Line 3 "Policy/Criteria/Gateway criteria/Apply policy: " $GWType
 			If($Policy.GWRule -ne "AnyGW")
 			{
@@ -30959,13 +31243,13 @@ Function OutputPoliciesDetails
 				}
 			}
 
-			Line 3 "Policy/Criteria/Parallels client criteris/Windows: " $Policy.AllowedOSes.Windows.ToString()
-			Line 3 "Policy/Criteria/Parallels client criteris/iOS: " $Policy.AllowedOSes.iOS.ToString()
-			Line 3 "Policy/Criteria/Parallels client criteris/HTML5: " $Policy.AllowedOSes.HTML5.ToString()
-			Line 3 "Policy/Criteria/Parallels client criteris/macOS: " $Policy.AllowedOSes.Mac.ToString()
-			Line 3 "Policy/Criteria/Parallels client criteris/Android: " $Policy.AllowedOSes.Android.ToString()
-			Line 3 "Policy/Criteria/Parallels client criteris/Chrome: " $Policy.AllowedOSes.Chrome.ToString()
-			Line 3 "Policy/Criteria/Parallels client criteris/Linux: " $Policy.AllowedOSes.Linux.ToString()
+			Line 3 "Policy/Criteria/Parallels client criteria/Windows: " $Policy.AllowedOSes.Windows.ToString()
+			Line 3 "Policy/Criteria/Parallels client criteria/iOS: " $Policy.AllowedOSes.iOS.ToString()
+			Line 3 "Policy/Criteria/Parallels client criteria/HTML5: " $Policy.AllowedOSes.HTML5.ToString()
+			Line 3 "Policy/Criteria/Parallels client criteria/macOS: " $Policy.AllowedOSes.Mac.ToString()
+			Line 3 "Policy/Criteria/Parallels client criteria/Android: " $Policy.AllowedOSes.Android.ToString()
+			Line 3 "Policy/Criteria/Parallels client criteria/Chrome: " $Policy.AllowedOSes.Chrome.ToString()
+			Line 3 "Policy/Criteria/Parallels client criteria/Linux: " $Policy.AllowedOSes.Linux.ToString()
 			Line 0 ""
 		}
 		If($HTML)
@@ -30991,15 +31275,15 @@ Function OutputPoliciesDetails
 				}
 			}
 
-			$rowdata += @(,("Policy/Criteria/Parallels client criteris/Windows",($Script:htmlsb),$Policy.AllowedOSes.Windows.ToString(),$htmlwhite))
-			$rowdata += @(,("Policy/Criteria/Parallels client criteris/iOS",($Script:htmlsb),$Policy.AllowedOSes.iOS.ToString(),$htmlwhite))
-			$rowdata += @(,("Policy/Criteria/Parallels client criteris/HTML5",($Script:htmlsb),$Policy.AllowedOSes.HTML5.ToString(),$htmlwhite))
-			$rowdata += @(,("Policy/Criteria/Parallels client criteris/macOS",($Script:htmlsb),$Policy.AllowedOSes.Mac.ToString(),$htmlwhite))
-			$rowdata += @(,("Policy/Criteria/Parallels client criteris/Android",($Script:htmlsb),$Policy.AllowedOSes.Android.ToString(),$htmlwhite))
-			$rowdata += @(,("Policy/Criteria/Parallels client criteris/Chrome",($Script:htmlsb),$Policy.AllowedOSes.Chrome.ToString(),$htmlwhite))
-			$rowdata += @(,("Policy/Criteria/Parallels client criteris/Linux",($Script:htmlsb),$Policy.AllowedOSes.Linux.ToString(),$htmlwhite))
+			$rowdata += @(,("Policy/Criteria/Parallels client criteria/Windows",($Script:htmlsb),$Policy.AllowedOSes.Windows.ToString(),$htmlwhite))
+			$rowdata += @(,("Policy/Criteria/Parallels client criteria/iOS",($Script:htmlsb),$Policy.AllowedOSes.iOS.ToString(),$htmlwhite))
+			$rowdata += @(,("Policy/Criteria/Parallels client criteria/HTML5",($Script:htmlsb),$Policy.AllowedOSes.HTML5.ToString(),$htmlwhite))
+			$rowdata += @(,("Policy/Criteria/Parallels client criteria/macOS",($Script:htmlsb),$Policy.AllowedOSes.Mac.ToString(),$htmlwhite))
+			$rowdata += @(,("Policy/Criteria/Parallels client criteria/Android",($Script:htmlsb),$Policy.AllowedOSes.Android.ToString(),$htmlwhite))
+			$rowdata += @(,("Policy/Criteria/Parallels client criteria/Chrome",($Script:htmlsb),$Policy.AllowedOSes.Chrome.ToString(),$htmlwhite))
+			$rowdata += @(,("Policy/Criteria/Parallels client criteria/Linux",($Script:htmlsb),$Policy.AllowedOSes.Linux.ToString(),$htmlwhite))
 			
-			$msg = ""
+			$msg = "Criteria"
 			$columnWidths = @("400","300")
 			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
 			WriteHTMLLine 0 0 ""
@@ -32605,7 +32889,7 @@ Function OutputPoliciesDetails
 				OutputPolicySetting $txt $Policy.ClientPolicy.Session.Compression.Compress.ToString()
 			}
 
-			$txt = "                         Enable RDP compression"
+			$txt = "Session/Experience/Compression/Enable RDP compression"
 			If($MSWord -or $PDF)
 			{
 				$SettingsWordTable += @{
@@ -32621,7 +32905,7 @@ Function OutputPoliciesDetails
 			}
 			If($Text)
 			{
-				OutputPolicySetting "`t`t`t`t`t`t`t`t Enable RDP compression" $Policy.ClientPolicy.Session.Compression.Compress.ToString()
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.Compression.Compress.ToString()
 			}
 
 			$PrintCompression = ""
@@ -32634,7 +32918,7 @@ Function OutputPoliciesDetails
 				Default						{$PrintCompression = "Universal printing compression policy not found: $($Policy.ClientPolicy.Session.Compression.PrintingCompression)"; Break}
 			}
 
-			$txt = "                         Universal printing compression policy"
+			$txt = "Session/Experience/Compression/Universal printing compression policy"
 			If($MSWord -or $PDF)
 			{
 				$SettingsWordTable += @{
@@ -32650,7 +32934,7 @@ Function OutputPoliciesDetails
 			}
 			If($Text)
 			{
-				OutputPolicySetting "`t`t`t`t`t`t  Universal printing compression policy" $PrintCompression
+				OutputPolicySetting $txt $PrintCompression
 			}
 
 			$ScanCompression = ""
@@ -32663,7 +32947,7 @@ Function OutputPoliciesDetails
 				Default						{$ScanCompression = "Universal scanning compression policy not found: $($Policy.ClientPolicy.Session.Compression.ScanningCompression)"; Break}
 			}
 
-			$txt = "                         Universal scanning compression policy"
+			$txt = "Session/Experience/Compression/Universal scanning compression policy"
 			If($MSWord -or $PDF)
 			{
 				$SettingsWordTable += @{
@@ -32679,7 +32963,7 @@ Function OutputPoliciesDetails
 			}
 			If($Text)
 			{
-				OutputPolicySetting "`t`t`t`t`t`t  Universal scanning compression policy" $ScanCompression
+				OutputPolicySetting $txt $ScanCompression
 			}
 		}
 		

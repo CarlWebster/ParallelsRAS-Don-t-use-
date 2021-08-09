@@ -93,7 +93,23 @@
 #		Windows client/Branding
 #		Windows client/Messages
 #		Windows client/Custom menu
+#	Added to Gateway and Gateway Default Settings:
+#		Allow cross-origin resource sharing
+#			Domains for cross-origin resource sharing
+#			Browser cache time in months
+#		Clipboard redirection
+#		File Transfer Direction
+#		Use ciphers according to server preference
+#	Added to RD Session Host, RD Session Host Groups, and Default Site Settings:
+#		File Transfer Direction
+#		File Transfer Location
+#		File Transfer Do not allow to change location
+#	Fixed some text formatting issues
 #	In Certificates/General, moved Expiration date to before Common name
+#	In Published Resources, only show Associated File Extensions if the EnableFileExtensions property is True
+#		If you add file extensions and later disable file extensions, the extensions previously entered are still there
+#	Renamed in Gateway SSL/TLS HSTS settings "Max-age" to "Browse cache time in months"
+#	Removed the Restrictions label from Gateways/HTML5 as it is no longer in the console
 #	Updated Function GetVDIType with Hypervisor data for ESXi 7.0 and vCenter 7.0
 
 #Version 2.10 25-Apr-2021
