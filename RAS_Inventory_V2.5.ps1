@@ -387,7 +387,7 @@
 	NAME: RAS_Inventory_V2.5.ps1
 	VERSION: 2.50
 	AUTHOR: Carl Webster
-	LASTEDIT: August 10, 2021 Update 10
+	LASTEDIT: August 11, 2021 Update 11
 #>
 
 
@@ -530,7 +530,7 @@ Param(
 #		Session/Local devices and resources/Clipboard
 #		Session/Local devices and resources/Disk drives
 #		Session/Local devices and resources/Devices
-#		Session/Local devices and resources/Video capture devices
+#		Session/Local devices and resources/Video capture devices (not in PowerShell yet)
 #		Session/Local devices and resources/Ports
 #		Session/Local devices and resources/Smart cards
 #		Session/Local devices and resources/Windows touch input
@@ -580,7 +580,19 @@ Param(
 #		Disable MFA for all users except
 #		User or group list
 #		Updated all items and text to match the console (a lot of work)
-#		Added what I could for DeepNet and SafeNet Providers
+#		Added for Azure RADIUS, Duo RADIUS, FortiAuthenticator RADIUS, TekRADIUS, and RADIUS
+#			Connection
+#			Attributes
+#			Automation
+#		Added DeepNet Provider
+#			Connection
+#			Application
+#			Authentication
+#		Added SafeNet Provider
+#			Connection
+#			Authentication
+#		Added Google Authenticator
+#			General
 #	Added to Gateway and Gateway Default Settings:
 #		HTML5/Allow cross-origin resource sharing
 #			Domains for cross-origin resource sharing
@@ -608,6 +620,8 @@ Param(
 #		"Support Shell URL namespace objects" to "Support Windows Shell URL namespace objects"
 #	Removed the Restrictions label from Gateways/HTML5 as it is no longer in the console
 #	Updated Function GetVDIType with Hypervisor data for ESXi 7.0 and vCenter 7.0
+#	Updated the Help text
+#	Updated the ReadMe file
 #
 #Version 2.10 25-Apr-2021
 #	Fixed wrong variables used to determine User Profile technology
@@ -5165,7 +5179,6 @@ Function OutputSite
 					"LogonDisabled"					{$Status = "New logons and reconnections disabled"; Break}
 					"LogonDrain"					{$Status = "Logons drain"; Break}
 					"LogonDrainUntilRestart"		{$Status = "Logons disabled until reboot"; Break}
-					"OK"							{$Status = "OK"; Break}
 					"ManagedESXNotSupported"		{$Status = "Managed ESX is not supported"; Break}
 					"MarkedForDeletion"				{$Status = "Marked for deletion"; Break}
 					"MaxNonCompletedSessions"		{$Status = "Maximum Noncompleted sessions"; Break}
@@ -5181,6 +5194,7 @@ Function OutputSite
 					"NotInUse"						{$Status = "Not in use"; Break}
 					"NotJoined"						{$Status = "Not joined"; Break}
 					"NotVerified"					{$Status = "Not verified"; Break}
+					"OK"							{$Status = "OK"; Break}
 					"PortMismatch"					{$Status = "Port mismatch"; Break}
 					"Provisioning"					{$Status = "Provisioning"; Break}
 					"RASprepInProgress"				{$Status = "RAS prep in progress"; Break}
@@ -12008,8 +12022,7 @@ Function OutputSite
 					#use the Site default settings
 					
 					#Template technology settings do not include UPD, only FSLogix
-					#$TemplateDefaults = Get-RASRDSDefaultSettings -SiteId $Site.Id -EA 0 4>$Null
-					$TemplateDefaults = $Null
+					$TemplateDefaults = Get-RASRDSDefaultSettings -SiteId $Site.Id -EA 0 4>$Null
 					
 					If($? -and $Null -ne $TemplateDefaults)
 					{
@@ -30041,111 +30054,255 @@ Function Output2FASetting
 			
 			If($RAS2FASettings.Provider -eq "AzureRadius")
 			{
-				$ScriptInformation.Add(@{Data = "     Type Name"; Value = $RAS2FASettings.AzureRadiusSettings.TypeName; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Primary server"; Value = $RAS2FASettings.AzureRadiusSettings.Server; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Secondary server"; Value = $RAS2FASettings.AzureRadiusSettings.BackupServer; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Connection"; Value = ""; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Type Name"; Value = $RAS2FASettings.AzureRadiusSettings.TypeName; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Primary server"; Value = $RAS2FASettings.AzureRadiusSettings.Server; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Secondary server"; Value = $RAS2FASettings.AzureRadiusSettings.BackupServer; }) > $Null
 				If($RAS2FASettings.AzureRadiusSettings.HAMode -eq "Parallel")
 				{
-					$ScriptInformation.Add(@{Data = "     HA mode"; Value = "Active - active (parallel)"; }) > $Null
+					$ScriptInformation.Add(@{Data = "          HA mode"; Value = "Active - active (parallel)"; }) > $Null
 				}
 				Else
 				{
-					$ScriptInformation.Add(@{Data = "     HA mode"; Value = "Active - passive (failover)"; }) > $Null
+					$ScriptInformation.Add(@{Data = "          HA mode"; Value = "Active - passive (failover)"; }) > $Null
 				}
-				$ScriptInformation.Add(@{Data = "     Port"; Value = $RAS2FASettings.AzureRadiusSettings.Port; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Timeout"; Value = $RAS2FASettings.AzureRadiusSettings.Timeout; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Retries"; Value = $RAS2FASettings.AzureRadiusSettings.Retries; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Password Encoding"; Value = $RAS2FASettings.AzureRadiusSettings.PasswordEncoding; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Forward username only to Radius Server"; Value = $RAS2FASettings.AzureRadiusSettings.UsernameOnly.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "     Forward the first password to Windows authentication provider"; Value = $RAS2FASettings.AzureRadiusSettings.ForwardFirstPwdToAD.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "          Port"; Value = $RAS2FASettings.AzureRadiusSettings.Port; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Timeout"; Value = $RAS2FASettings.AzureRadiusSettings.Timeout; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Retries"; Value = $RAS2FASettings.AzureRadiusSettings.Retries; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Password Encoding"; Value = $RAS2FASettings.AzureRadiusSettings.PasswordEncoding; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Forward username only to Radius Server"; Value = $RAS2FASettings.AzureRadiusSettings.UsernameOnly.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "          Forward the first password to Windows authentication provider"; Value = $RAS2FASettings.AzureRadiusSettings.ForwardFirstPwdToAD.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "     Attributes"; Value = ""; }) > $Null
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.AzureRadiusSettings.AttributeInfoList)
+				{
+					$cnt++
+					$ScriptInformation.Add(@{Data = ""; Value = "Attribute $cnt"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Name: $($Item.Name)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Vendor: $($Item.Vendor)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Type: $($Item.AttributeType)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Value: $($Item.Value)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null #blank separator line
+				}
+				$ScriptInformation.Add(@{Data = "     Automation"; Value = ""; }) > $Null
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.AzureRadiusSettings.AutomationInfoList)
+				{
+					$cnt++
+					$ScriptInformation.Add(@{Data = ""; Value = "Automation $cnt"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Enabled: $($Item.Enabled.ToString())"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Title: $($Item.Title)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Command: $($Item.Command)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Image: $($Item.Image)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Autosend: $($Item.AutoSend.ToString())"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null #blank separator line
+				}
 			}
 			ElseIf($RAS2FASettings.Provider -eq "DuoRadius")
 			{
-				$ScriptInformation.Add(@{Data = "     Type Name"; Value = $RAS2FASettings.DuoRadiusSettings.TypeName; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Primary Server"; Value = $RAS2FASettings.DuoRadiusSettings.Server; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Secondary Server"; Value = $RAS2FASettings.DuoRadiusSettings.BackupServer; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Type Name"; Value = $RAS2FASettings.DuoRadiusSettings.TypeName; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Primary Server"; Value = $RAS2FASettings.DuoRadiusSettings.Server; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Secondary Server"; Value = $RAS2FASettings.DuoRadiusSettings.BackupServer; }) > $Null
 				If($RAS2FASettings.DuoRadiusSettings.HAMode -eq "Parallel")
 				{
-					$ScriptInformation.Add(@{Data = "     HA mode"; Value = "Active - active (parallel)"; }) > $Null
+					$ScriptInformation.Add(@{Data = "          HA mode"; Value = "Active - active (parallel)"; }) > $Null
 				}
 				Else
 				{
-					$ScriptInformation.Add(@{Data = "     HA mode"; Value = "Active - passive (failover)"; }) > $Null
+					$ScriptInformation.Add(@{Data = "          HA mode"; Value = "Active - passive (failover)"; }) > $Null
 				}
-				$ScriptInformation.Add(@{Data = "     Port"; Value = $RAS2FASettings.DuoRadiusSettings.Port; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Timeout"; Value = $RAS2FASettings.DuoRadiusSettings.Timeout; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Retries"; Value = $RAS2FASettings.DuoRadiusSettings.Retries; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Password Encoding"; Value = $RAS2FASettings.DuoRadiusSettings.PasswordEncoding; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Forward username only to Radius Server"; Value = $RAS2FASettings.DuoRadiusSettings.UsernameOnly.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "     Forward the first password to Windows authentication provider"; Value = $RAS2FASettings.DuoRadiusSettings.ForwardFirstPwdToAD.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "          Port"; Value = $RAS2FASettings.DuoRadiusSettings.Port; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Timeout"; Value = $RAS2FASettings.DuoRadiusSettings.Timeout; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Retries"; Value = $RAS2FASettings.DuoRadiusSettings.Retries; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Password Encoding"; Value = $RAS2FASettings.DuoRadiusSettings.PasswordEncoding; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Forward username only to Radius Server"; Value = $RAS2FASettings.DuoRadiusSettings.UsernameOnly.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "          Forward the first password to Windows authentication provider"; Value = $RAS2FASettings.DuoRadiusSettings.ForwardFirstPwdToAD.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "     Attributes"; Value = ""; }) > $Null
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.DuoRadiusSettings.AttributeInfoList)
+				{
+					$cnt++
+					$ScriptInformation.Add(@{Data = ""; Value = "Attribute $cnt"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Name: $($Item.Name)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Vendor: $($Item.Vendor)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Type: $($Item.AttributeType)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Value: $($Item.Value)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null #blank separator line
+				}
+				$ScriptInformation.Add(@{Data = "     Automation"; Value = ""; }) > $Null
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.DuoRadiusSettings.AutomationInfoList)
+				{
+					$cnt++
+					$ScriptInformation.Add(@{Data = ""; Value = "Automation $cnt"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Enabled: $($Item.Enabled.ToString())"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Title: $($Item.Title)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Command: $($Item.Command)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Image: $($Item.Image)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Autosend: $($Item.AutoSend.ToString())"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null #blank separator line
+				}
 			}
 			ElseIf($RAS2FASettings.Provider -eq "FortiRadius")
 			{
-				$ScriptInformation.Add(@{Data = "     Type Name"; Value = $RAS2FASettings.FortiRadiusSettings.TypeName; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Primary server"; Value = $RAS2FASettings.FortiRadiusSettings.Server; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Secondary server"; Value = $RAS2FASettings.FortiRadiusSettings.BackupServer; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Type Name"; Value = $RAS2FASettings.FortiRadiusSettings.TypeName; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Primary server"; Value = $RAS2FASettings.FortiRadiusSettings.Server; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Secondary server"; Value = $RAS2FASettings.FortiRadiusSettings.BackupServer; }) > $Null
 				If($RAS2FASettings.FortiRadiusSettings.HAMode -eq "Parallel")
 				{
-					$ScriptInformation.Add(@{Data = "     HA mode"; Value = "Active - active (parallel)"; }) > $Null
+					$ScriptInformation.Add(@{Data = "          HA mode"; Value = "Active - active (parallel)"; }) > $Null
 				}
 				Else
 				{
-					$ScriptInformation.Add(@{Data = "     HA mode"; Value = "Active - passive (failover)"; }) > $Null
+					$ScriptInformation.Add(@{Data = "          HA mode"; Value = "Active - passive (failover)"; }) > $Null
 				}
-				$ScriptInformation.Add(@{Data = "     Port"; Value = $RAS2FASettings.FortiRadiusSettings.Port; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Timeout"; Value = $RAS2FASettings.FortiRadiusSettings.Timeout; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Retries"; Value = $RAS2FASettings.FortiRadiusSettings.Retries; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Password Encoding"; Value = $RAS2FASettings.FortiRadiusSettings.PasswordEncoding; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Forward username only to Radius Server"; Value = $RAS2FASettings.FortiRadiusSettings.UsernameOnly.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "     Forward the first password to Windows authentication provider"; Value = $RAS2FASettings.FortiRadiusSettings.ForwardFirstPwdToAD.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "          Port"; Value = $RAS2FASettings.FortiRadiusSettings.Port; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Timeout"; Value = $RAS2FASettings.FortiRadiusSettings.Timeout; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Retries"; Value = $RAS2FASettings.FortiRadiusSettings.Retries; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Password Encoding"; Value = $RAS2FASettings.FortiRadiusSettings.PasswordEncoding; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Forward username only to Radius Server"; Value = $RAS2FASettings.FortiRadiusSettings.UsernameOnly.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "          Forward the first password to Windows authentication provider"; Value = $RAS2FASettings.FortiRadiusSettings.ForwardFirstPwdToAD.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "     Attributes"; Value = ""; }) > $Null
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.FortiRadiusSettings.AttributeInfoList)
+				{
+					$cnt++
+					$ScriptInformation.Add(@{Data = ""; Value = "Attribute $cnt"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Name: $($Item.Name)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Vendor: $($Item.Vendor)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Type: $($Item.AttributeType)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Value: $($Item.Value)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null #blank separator line
+				}
+				$ScriptInformation.Add(@{Data = "     Automation"; Value = ""; }) > $Null
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.FortiRadiusSettings.AutomationInfoList)
+				{
+					$cnt++
+					$ScriptInformation.Add(@{Data = ""; Value = "Automation $cnt"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Enabled: $($Item.Enabled.ToString())"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Title: $($Item.Title)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Command: $($Item.Command)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Image: $($Item.Image)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Autosend: $($Item.AutoSend.ToString())"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null #blank separator line
+				}
 			}
 			ElseIf($RAS2FASettings.Provider -eq "TekRadius")
 			{
-				$ScriptInformation.Add(@{Data = "     Type Name"; Value = $RAS2FASettings.TekRadiusSettings.TypeName; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Primary server"; Value = $RAS2FASettings.TekRadiusSettings.Server; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Secondary server"; Value = $RAS2FASettings.TekRadiusSettings.BackupServer; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Type Name"; Value = $RAS2FASettings.TekRadiusSettings.TypeName; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Primary server"; Value = $RAS2FASettings.TekRadiusSettings.Server; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Secondary server"; Value = $RAS2FASettings.TekRadiusSettings.BackupServer; }) > $Null
 				If($RAS2FASettings.TekRadiusSettings.HAMode -eq "Parallel")
 				{
-					$ScriptInformation.Add(@{Data = "     HA mode"; Value = "Active - active (parallel)"; }) > $Null
+					$ScriptInformation.Add(@{Data = "          HA mode"; Value = "Active - active (parallel)"; }) > $Null
 				}
 				Else
 				{
-					$ScriptInformation.Add(@{Data = "     HA mode"; Value = "Active - passive (failover)"; }) > $Null
+					$ScriptInformation.Add(@{Data = "          HA mode"; Value = "Active - passive (failover)"; }) > $Null
 				}
-				$ScriptInformation.Add(@{Data = "     Port"; Value = $RAS2FASettings.TekRadiusSettings.Port; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Timeout"; Value = $RAS2FASettings.TekRadiusSettings.Timeout; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Retries"; Value = $RAS2FASettings.TekRadiusSettings.Retries; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Password Encoding"; Value = $RAS2FASettings.TekRadiusSettings.PasswordEncoding; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Forward username only to Radius Server"; Value = $RAS2FASettings.TekRadiusSettings.UsernameOnly.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "     Forward the first password to Windows authentication provider"; Value = $RAS2FASettings.TekRadiusSettings.ForwardFirstPwdToAD.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "          Port"; Value = $RAS2FASettings.TekRadiusSettings.Port; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Timeout"; Value = $RAS2FASettings.TekRadiusSettings.Timeout; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Retries"; Value = $RAS2FASettings.TekRadiusSettings.Retries; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Password Encoding"; Value = $RAS2FASettings.TekRadiusSettings.PasswordEncoding; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Forward username only to Radius Server"; Value = $RAS2FASettings.TekRadiusSettings.UsernameOnly.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "          Forward the first password to Windows authentication provider"; Value = $RAS2FASettings.TekRadiusSettings.ForwardFirstPwdToAD.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "     Attributes"; Value = ""; }) > $Null
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.TekRadiusSettings.AttributeInfoList)
+				{
+					$cnt++
+					$ScriptInformation.Add(@{Data = ""; Value = "Attribute $cnt"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Name: $($Item.Name)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Vendor: $($Item.Vendor)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Type: $($Item.AttributeType)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Value: $($Item.Value)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null #blank separator line
+				}
+				$ScriptInformation.Add(@{Data = "     Automation"; Value = ""; }) > $Null
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.TekRadiusSettings.AutomationInfoList)
+				{
+					$cnt++
+					$ScriptInformation.Add(@{Data = ""; Value = "Automation $cnt"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Enabled: $($Item.Enabled.ToString())"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Title: $($Item.Title)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Command: $($Item.Command)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Image: $($Item.Image)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Autosend: $($Item.AutoSend.ToString())"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null #blank separator line
+				}
 			}
 			ElseIf($RAS2FASettings.Provider -eq "Radius")
 			{
-				$ScriptInformation.Add(@{Data = "     Type Name"; Value = $RAS2FASettings.RadiusSettings.TypeName; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Primary server"; Value = $RAS2FASettings.RadiusSettings.Server; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Secondary server"; Value = $RAS2FASettings.RadiusSettings.BackupServer; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Type Name"; Value = $RAS2FASettings.RadiusSettings.TypeName; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Primary server"; Value = $RAS2FASettings.RadiusSettings.Server; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Secondary server"; Value = $RAS2FASettings.RadiusSettings.BackupServer; }) > $Null
 				If($RAS2FASettings.RadiusSettings.HAMode -eq "Parallel")
 				{
-					$ScriptInformation.Add(@{Data = "     HA mode"; Value = "Active - active (parallel)"; }) > $Null
+					$ScriptInformation.Add(@{Data = "          HA mode"; Value = "Active - active (parallel)"; }) > $Null
 				}
 				Else
 				{
-					$ScriptInformation.Add(@{Data = "     HA mode"; Value = "Active - passive (failover)"; }) > $Null
+					$ScriptInformation.Add(@{Data = "          HA mode"; Value = "Active - passive (failover)"; }) > $Null
 				}
-				$ScriptInformation.Add(@{Data = "     Port"; Value = $RAS2FASettings.RadiusSettings.Port; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Timeout"; Value = $RAS2FASettings.RadiusSettings.Timeout; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Retries"; Value = $RAS2FASettings.RadiusSettings.Retries; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Password Encoding"; Value = $RAS2FASettings.RadiusSettings.PasswordEncoding; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Forward username only to Radius Server"; Value = $RAS2FASettings.RadiusSettings.UsernameOnly.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "     Forward the first password to Windows authentication provider"; Value = $RAS2FASettings.RadiusSettings.ForwardFirstPwdToAD.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "          Port"; Value = $RAS2FASettings.RadiusSettings.Port; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Timeout"; Value = $RAS2FASettings.RadiusSettings.Timeout; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Retries"; Value = $RAS2FASettings.RadiusSettings.Retries; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Password Encoding"; Value = $RAS2FASettings.RadiusSettings.PasswordEncoding; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Forward username only to Radius Server"; Value = $RAS2FASettings.RadiusSettings.UsernameOnly.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "          Forward the first password to Windows authentication provider"; Value = $RAS2FASettings.RadiusSettings.ForwardFirstPwdToAD.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "     Attributes"; Value = ""; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Automation"; Value = ""; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Attributes"; Value = ""; }) > $Null
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.RadiusSettings.AttributeInfoList)
+				{
+					$cnt++
+					$ScriptInformation.Add(@{Data = ""; Value = "Attribute $cnt"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Name: $($Item.Name)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Vendor: $($Item.Vendor)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Type: $($Item.AttributeType)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Value: $($Item.Value)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null #blank separator line
+				}
+				$ScriptInformation.Add(@{Data = "     Automation"; Value = ""; }) > $Null
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.RadiusSettings.AutomationInfoList)
+				{
+					$cnt++
+					$ScriptInformation.Add(@{Data = ""; Value = "Automation $cnt"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Enabled: $($Item.Enabled.ToString())"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Title: $($Item.Title)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Command: $($Item.Command)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Image: $($Item.Image)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Autosend: $($Item.AutoSend.ToString())"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null #blank separator line
+				}
 			}
 			ElseIf($RAS2FASettings.Provider -eq "Deepnet")
 			{
-				$ScriptInformation.Add(@{Data = "     Type"; Value = $RAS2FASettings.DeepnetSettings.DeepnetType; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Server"; Value = $RAS2FASettings.DeepnetSettings.Server; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Port"; Value = $RAS2FASettings.DeepnetSettings.Port.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "     Enable SSL"; Value = $RAS2FASettings.DeepnetSettings.SSL.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "     Agent"; Value = $RAS2FASettings.DeepnetAgent.Server; }) > $Null
+				Switch($RAS2FASettings.DeepnetSettings.AuthMode)
+				{
+					"MandatoryForAllUsers"						{$DeepNetAuthMode = "Mandatory for all users"; Break}
+					"CreateTokenForDomainAuthenticatedUsers"	{$DeepNetAuthMode = "Create token for Domain Authenticated users"; Break}
+					"UsersWithSafeNetAcc"						{$DeepNetAuthMode = "Use only for users with a safe account"; Break}
+					Default										{$DeepNetAuthMode = "Deepnet mode not found: $($RAS2FASettings.DeepnetSettings.AuthMode)"; Break}
+				}
+
+				$ScriptInformation.Add(@{Data = "     Connection"; Value = ""; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Type"; Value = $RAS2FASettings.DeepnetSettings.DeepnetType; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Server"; Value = $RAS2FASettings.DeepnetSettings.Server; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Port"; Value = $RAS2FASettings.DeepnetSettings.Port.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "          Enable SSL"; Value = $RAS2FASettings.DeepnetSettings.SSL.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "          Agent"; Value = $RAS2FASettings.DeepnetSettings.DeepnetAgent; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Application"; Value = ""; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Application"; Value = $RAS2FASettings.DeepnetSettings.App; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Domain"; Value = $RAS2FASettings.DeepnetSettings.DefaultDomain; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Authentication"; Value = ""; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Mode"; Value = $DeepNetAuthMode; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Token Type"; Value = $RAS2FASettings.DeepnetSettings.TokenType.ToString(); }) > $Null
+				#$ScriptInformation.Add(@{Data = "          Allow Channels"; Value = $RAS2FASettings.DeepnetSettings.; }) > $Null
 			}
 			ElseIf($RAS2FASettings.Provider -eq "SafeNet")
 			{
@@ -30379,121 +30536,259 @@ Function Output2FASetting
 			
 			If($RAS2FASettings.Provider -eq "AzureRadius")
 			{
-				Line 4 "Type Name`t`t`t`t: " $RAS2FASettings.AzureRadiusSettings.TypeName
-				Line 4 "Primary Server`t`t`t`t: " $RAS2FASettings.AzureRadiusSettings.Server
-				Line 4 "Secondary server`t`t`t: " $RAS2FASettings.AzureRadiusSettings.BackupServer
+				Line 4 "Connection"
+				Line 5 "Type Name`t`t`t`t: " $RAS2FASettings.AzureRadiusSettings.TypeName
+				Line 5 "Primary Server`t`t`t`t: " $RAS2FASettings.AzureRadiusSettings.Server
+				Line 5 "Secondary server`t`t`t: " $RAS2FASettings.AzureRadiusSettings.BackupServer
 				If($RAS2FASettings.AzureRadiusSettings.HAMode -eq "Parallel")
 				{
-					Line 4 "HA mode`t`t`t`t`t: " "Active - active (parallel)"
+					Line 5 "HA mode`t`t`t`t`t: " "Active - active (parallel)"
 				}
 				Else
 				{
-					Line 4 "HA mode`t`t`t`t`t: " "Active - passive (failover)"
+					Line 5 "HA mode`t`t`t`t`t: " "Active - passive (failover)"
 				}
-				Line 4 "Port`t`t`t`t`t: " $RAS2FASettings.AzureRadiusSettings.Port
-				Line 4 "Timeout`t`t`t`t`t: " $RAS2FASettings.AzureRadiusSettings.Timeout
-				Line 4 "Retries`t`t`t`t`t: " $RAS2FASettings.AzureRadiusSettings.Retries
-				Line 4 "Password Encoding`t`t`t: " $RAS2FASettings.AzureRadiusSettings.PasswordEncoding
-				Line 4 "Forward username only to Radius Server`t: " $RAS2FASettings.AzureRadiusSettings.UsernameOnly.ToString()
-				Line 4 "Forward the first password to "
-				Line 4 "Windows authentication provider`t`t: " $RAS2FASettings.AzureRadiusSettings.ForwardFirstPwdToAD.ToString()
+				Line 5 "Port`t`t`t`t`t: " $RAS2FASettings.AzureRadiusSettings.Port
+				Line 5 "Timeout`t`t`t`t`t: " $RAS2FASettings.AzureRadiusSettings.Timeout
+				Line 5 "Retries`t`t`t`t`t: " $RAS2FASettings.AzureRadiusSettings.Retries
+				Line 5 "Password Encoding`t`t`t: " $RAS2FASettings.AzureRadiusSettings.PasswordEncoding
+				Line 5 "Forward username only to Radius Server`t: " $RAS2FASettings.AzureRadiusSettings.UsernameOnly.ToString()
+				Line 5 "Forward the first password to "
+				Line 5 "Windows authentication provider`t`t: " $RAS2FASettings.AzureRadiusSettings.ForwardFirstPwdToAD.ToString()
+				Line 4 "Attributes"
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.AzureRadiusSettings.AttributeInfoList)
+				{
+					$cnt++
+					Line 5 "Attribute $cnt"
+					Line 6 "Name  : $($Item.Name)"
+					Line 6 "Vendor: $($Item.Vendor)"
+					Line 6 "Type  : $($Item.AttributeType)"
+					Line 6 "Value : $($Item.Value)"
+					Line 5 "" #blank separator line
+				}
+				Line 4 "Automation"
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.AzureRadiusSettings.AutomationInfoList)
+				{
+					$cnt++
+					Line 5 "" "Automation $cnt"
+					Line 6 "Enabled : $($Item.Enabled.ToString())"
+					Line 6 "Title   : $($Item.Title)"
+					Line 6 "Command : $($Item.Command)"
+					Line 6 "Image   : $($Item.Image)"
+					Line 6 "Autosend: $($Item.AutoSend.ToString())"
+					Line 5 "" "" #blank separator line
+				}
 				Line 0 ""
 			}
 			ElseIf($RAS2FASettings.Provider -eq "DuoRadius")
 			{
-				Line 4 "Type Name`t`t`t`t: " $RAS2FASettings.DuoRadiusSettings.TypeName
-				Line 4 "Primary Server`t`t`t`t: " $RAS2FASettings.DuoRadiusSettings.Server
-				Line 4 "Secondary server`t`t`t: " $RAS2FASettings.DuoRadiusSettings.BackupServer
+				Line 4 "Connection"
+				Line 5 "Type Name`t`t`t`t: " $RAS2FASettings.DuoRadiusSettings.TypeName
+				Line 5 "Primary Server`t`t`t`t: " $RAS2FASettings.DuoRadiusSettings.Server
+				Line 5 "Secondary server`t`t`t: " $RAS2FASettings.DuoRadiusSettings.BackupServer
 				If($RAS2FASettings.DuoRadiusSettings.HAMode -eq "Parallel")
 				{
-					Line 4 "HA mode`t`t`t`t`t: " "Active - active (parallel)"
+					Line 5 "HA mode`t`t`t`t`t: " "Active - active (parallel)"
 				}
 				Else
 				{
-					Line 4 "HA mode`t`t`t`t`t: " "Active - passive (failover)"
+					Line 5 "HA mode`t`t`t`t`t: " "Active - passive (failover)"
 				}
-				Line 4 "Port`t`t`t`t`t: " $RAS2FASettings.DuoRadiusSettings.Port
-				Line 4 "Timeout`t`t`t`t`t: " $RAS2FASettings.DuoRadiusSettings.Timeout
-				Line 4 "Retries`t`t`t`t`t: " $RAS2FASettings.DuoRadiusSettings.Retries
-				Line 4 "Password Encoding`t`t`t: " $RAS2FASettings.DuoRadiusSettings.PasswordEncoding
-				Line 4 "Forward username only to Radius Server`t: " $RAS2FASettings.DuoRadiusSettings.UsernameOnly.ToString()
-				Line 4 "Forward the first password to "
-				Line 4 "Windows authentication provider`t`t: " $RAS2FASettings.DuoRadiusSettings.ForwardFirstPwdToAD.ToString()
+				Line 5 "Port`t`t`t`t`t: " $RAS2FASettings.DuoRadiusSettings.Port
+				Line 5 "Timeout`t`t`t`t`t: " $RAS2FASettings.DuoRadiusSettings.Timeout
+				Line 5 "Retries`t`t`t`t`t: " $RAS2FASettings.DuoRadiusSettings.Retries
+				Line 5 "Password Encoding`t`t`t: " $RAS2FASettings.DuoRadiusSettings.PasswordEncoding
+				Line 5 "Forward username only to Radius Server`t: " $RAS2FASettings.DuoRadiusSettings.UsernameOnly.ToString()
+				Line 5 "Forward the first password to "
+				Line 5 "Windows authentication provider`t`t: " $RAS2FASettings.DuoRadiusSettings.ForwardFirstPwdToAD.ToString()
+				Line 4 "Attributes"
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.DuoRadiusSettings.AttributeInfoList)
+				{
+					$cnt++
+					Line 5 "Attribute $cnt"
+					Line 6 "Name  : $($Item.Name)"
+					Line 6 "Vendor: $($Item.Vendor)"
+					Line 6 "Type  : $($Item.AttributeType)"
+					Line 6 "Value : $($Item.Value)"
+					Line 5 "" #blank separator line
+				}
+				Line 4 "Automation"
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.DuoRadiusSettings.AutomationInfoList)
+				{
+					$cnt++
+					Line 5 "" "Automation $cnt"
+					Line 6 "Enabled : $($Item.Enabled.ToString())"
+					Line 6 "Title   : $($Item.Title)"
+					Line 6 "Command : $($Item.Command)"
+					Line 6 "Image   : $($Item.Image)"
+					Line 6 "Autosend: $($Item.AutoSend.ToString())"
+					Line 5 "" "" #blank separator line
+				}
 				Line 0 ""
 			}
 			ElseIf($RAS2FASettings.Provider -eq "FortiRadius")
 			{
-				Line 4 "Type Name`t`t`t`t: " $RAS2FASettings.FortiRadiusSettings.TypeName
-				Line 4 "Primary Server`t`t`t`t: " $RAS2FASettings.FortiRadiusSettings.Server
-				Line 4 "Secondary server`t`t`t: " $RAS2FASettings.FortiRadiusSettings.BackupServer
+				Line 4 "Connection"
+				Line 5 "Type Name`t`t`t`t: " $RAS2FASettings.FortiRadiusSettings.TypeName
+				Line 5 "Primary Server`t`t`t`t: " $RAS2FASettings.FortiRadiusSettings.Server
+				Line 5 "Secondary server`t`t`t: " $RAS2FASettings.FortiRadiusSettings.BackupServer
 				If($RAS2FASettings.FortiRadiusSettings.HAMode -eq "Parallel")
 				{
-					Line 4 "HA mode`t`t`t`t`t: " "Active - active (parallel)"
+					Line 5 "HA mode`t`t`t`t`t: " "Active - active (parallel)"
 				}
 				Else
 				{
-					Line 4 "HA mode`t`t`t`t`t: " "Active - passive (failover)"
+					Line 5 "HA mode`t`t`t`t`t: " "Active - passive (failover)"
 				}
-				Line 4 "Port`t`t`t`t`t: " $RAS2FASettings.FortiRadiusSettings.Port
-				Line 4 "Timeout`t`t`t`t`t: " $RAS2FASettings.FortiRadiusSettings.Timeout
-				Line 4 "Retries`t`t`t`t`t: " $RAS2FASettings.FortiRadiusSettings.Retries
-				Line 4 "Password Encoding`t`t`t: " $RAS2FASettings.FortiRadiusSettings.PasswordEncoding
-				Line 4 "Forward username only to Radius Server`t: " $RAS2FASettings.FortiRadiusSettings.UsernameOnly.ToString()
-				Line 4 "Forward the first password to "
-				Line 4 "Windows authentication provider`t`t: " $RAS2FASettings.FortiRadiusSettings.ForwardFirstPwdToAD.ToString()
+				Line 5 "Port`t`t`t`t`t: " $RAS2FASettings.FortiRadiusSettings.Port
+				Line 5 "Timeout`t`t`t`t`t: " $RAS2FASettings.FortiRadiusSettings.Timeout
+				Line 5 "Retries`t`t`t`t`t: " $RAS2FASettings.FortiRadiusSettings.Retries
+				Line 5 "Password Encoding`t`t`t: " $RAS2FASettings.FortiRadiusSettings.PasswordEncoding
+				Line 5 "Forward username only to Radius Server`t: " $RAS2FASettings.FortiRadiusSettings.UsernameOnly.ToString()
+				Line 5 "Forward the first password to "
+				Line 5 "Windows authentication provider`t`t: " $RAS2FASettings.FortiRadiusSettings.ForwardFirstPwdToAD.ToString()
+				Line 4 "Attributes"
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.FortiRadiusSettings.AttributeInfoList)
+				{
+					$cnt++
+					Line 5 "Attribute $cnt"
+					Line 6 "Name  : $($Item.Name)"
+					Line 6 "Vendor: $($Item.Vendor)"
+					Line 6 "Type  : $($Item.AttributeType)"
+					Line 6 "Value : $($Item.Value)"
+					Line 5 "" #blank separator line
+				}
+				Line 4 "Automation"
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.FortiRadiusSettings.AutomationInfoList)
+				{
+					$cnt++
+					Line 5 "" "Automation $cnt"
+					Line 6 "Enabled : $($Item.Enabled.ToString())"
+					Line 6 "Title   : $($Item.Title)"
+					Line 6 "Command : $($Item.Command)"
+					Line 6 "Image   : $($Item.Image)"
+					Line 6 "Autosend: $($Item.AutoSend.ToString())"
+					Line 5 "" "" #blank separator line
+				}
 				Line 0 ""
 			}
 			ElseIf($RAS2FASettings.Provider -eq "TekRadius")
 			{
-				Line 4 "Type Name`t`t`t`t: " $RAS2FASettings.TekRadiusSettings.TypeName
-				Line 4 "Primary Server`t`t`t`t: " $RAS2FASettings.TekRadiusSettings.Server
-				Line 4 "Secondary server`t`t`t: " $RAS2FASettings.TekRadiusSettings.BackupServer
+				Line 4 "Connection"
+				Line 5 "Type Name`t`t`t`t: " $RAS2FASettings.TekRadiusSettings.TypeName
+				Line 5 "Primary Server`t`t`t`t: " $RAS2FASettings.TekRadiusSettings.Server
+				Line 5 "Secondary server`t`t`t: " $RAS2FASettings.TekRadiusSettings.BackupServer
 				If($RAS2FASettings.TekRadiusSettings.HAMode -eq "Parallel")
 				{
-					Line 4 "HA mode`t`t`t`t`t: " "Active - active (parallel)"
+					Line 5 "HA mode`t`t`t`t`t: " "Active - active (parallel)"
 				}
 				Else
 				{
-					Line 4 "HA mode`t`t`t`t`t: " "Active - passive (failover)"
+					Line 5 "HA mode`t`t`t`t`t: " "Active - passive (failover)"
 				}
-				Line 4 "Port`t`t`t`t`t: " $RAS2FASettings.TekRadiusSettings.Port
-				Line 4 "Timeout`t`t`t`t`t: " $RAS2FASettings.TekRadiusSettings.Timeout
-				Line 4 "Retries`t`t`t`t`t: " $RAS2FASettings.TekRadiusSettings.Retries
-				Line 4 "Password Encoding`t`t`t: " $RAS2FASettings.TekRadiusSettings.PasswordEncoding
-				Line 4 "Forward username only to Radius Server`t: " $RAS2FASettings.TekRadiusSettings.UsernameOnly.ToString()
-				Line 4 "Forward the first password to "
-				Line 4 "Windows authentication provider`t`t: " $RAS2FASettings.TekRadiusSettings.ForwardFirstPwdToAD.ToString()
+				Line 5 "Port`t`t`t`t`t: " $RAS2FASettings.TekRadiusSettings.Port
+				Line 5 "Timeout`t`t`t`t`t: " $RAS2FASettings.TekRadiusSettings.Timeout
+				Line 5 "Retries`t`t`t`t`t: " $RAS2FASettings.TekRadiusSettings.Retries
+				Line 5 "Password Encoding`t`t`t: " $RAS2FASettings.TekRadiusSettings.PasswordEncoding
+				Line 5 "Forward username only to Radius Server`t: " $RAS2FASettings.TekRadiusSettings.UsernameOnly.ToString()
+				Line 5 "Forward the first password to "
+				Line 5 "Windows authentication provider`t`t: " $RAS2FASettings.TekRadiusSettings.ForwardFirstPwdToAD.ToString()
+				Line 4 "Attributes"
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.TekRadiusSettings.AttributeInfoList)
+				{
+					$cnt++
+					Line 5 "Attribute $cnt"
+					Line 6 "Name  : $($Item.Name)"
+					Line 6 "Vendor: $($Item.Vendor)"
+					Line 6 "Type  : $($Item.AttributeType)"
+					Line 6 "Value : $($Item.Value)"
+					Line 5 "" #blank separator line
+				}
+				Line 4 "Automation"
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.TekRadiusSettings.AutomationInfoList)
+				{
+					$cnt++
+					Line 5 "" "Automation $cnt"
+					Line 6 "Enabled : $($Item.Enabled.ToString())"
+					Line 6 "Title   : $($Item.Title)"
+					Line 6 "Command : $($Item.Command)"
+					Line 6 "Image   : $($Item.Image)"
+					Line 6 "Autosend: $($Item.AutoSend.ToString())"
+					Line 5 "" "" #blank separator line
+				}
 				Line 0 ""
 			}
 			ElseIf($RAS2FASettings.Provider -eq "Radius")
 			{
-				Line 4 "Type Name`t`t`t`t: " $RAS2FASettings.RadiusSettings.TypeName
-				Line 4 "Primary Server`t`t`t`t: " $RAS2FASettings.RadiusSettings.Server
-				Line 4 "Secondary server`t`t`t: " $RAS2FASettings.RadiusSettings.BackupServer
+				Line 4 "Connection"
+				Line 5 "Type Name`t`t`t`t: " $RAS2FASettings.RadiusSettings.TypeName
+				Line 5 "Primary Server`t`t`t`t: " $RAS2FASettings.RadiusSettings.Server
+				Line 5 "Secondary server`t`t`t: " $RAS2FASettings.RadiusSettings.BackupServer
 				If($RAS2FASettings.RadiusSettings.HAMode -eq "Parallel")
 				{
-					Line 4 "HA mode`t`t`t`t`t: " "Active - active (parallel)"
+					Line 5 "HA mode`t`t`t`t`t: " "Active - active (parallel)"
 				}
 				Else
 				{
-					Line 4 "HA mode`t`t`t`t`t: " "Active - passive (failover)"
+					Line 5 "HA mode`t`t`t`t`t: " "Active - passive (failover)"
 				}
-				Line 4 "Port`t`t`t`t`t: " $RAS2FASettings.RadiusSettings.Port
-				Line 4 "Timeout`t`t`t`t`t: " $RAS2FASettings.RadiusSettings.Timeout
-				Line 4 "Retries`t`t`t`t`t: " $RAS2FASettings.RadiusSettings.Retries
-				Line 4 "Password Encoding`t`t`t: " $RAS2FASettings.RadiusSettings.PasswordEncoding
-				Line 4 "Forward username only to Radius Server`t: " $RAS2FASettings.RadiusSettings.UsernameOnly.ToString()
-				Line 4 "Forward the first password to "
-				Line 4 "Windows authentication provider`t`t: " $RAS2FASettings.RadiusSettings.ForwardFirstPwdToAD.ToString()
+				Line 5 "Port`t`t`t`t`t: " $RAS2FASettings.RadiusSettings.Port
+				Line 5 "Timeout`t`t`t`t`t: " $RAS2FASettings.RadiusSettings.Timeout
+				Line 5 "Retries`t`t`t`t`t: " $RAS2FASettings.RadiusSettings.Retries
+				Line 5 "Password Encoding`t`t`t: " $RAS2FASettings.RadiusSettings.PasswordEncoding
+				Line 5 "Forward username only to Radius Server`t: " $RAS2FASettings.RadiusSettings.UsernameOnly.ToString()
+				Line 5 "Forward the first password to "
+				Line 5 "Windows authentication provider`t`t: " $RAS2FASettings.RadiusSettings.ForwardFirstPwdToAD.ToString()
+				Line 4 "Attributes"
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.RadiusSettings.AttributeInfoList)
+				{
+					$cnt++
+					Line 5 "Attribute $cnt"
+					Line 6 "Name  : $($Item.Name)"
+					Line 6 "Vendor: $($Item.Vendor)"
+					Line 6 "Type  : $($Item.AttributeType)"
+					Line 6 "Value : $($Item.Value)"
+					Line 5 "" #blank separator line
+				}
+				Line 4 "Automation"
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.RadiusSettings.AutomationInfoList)
+				{
+					$cnt++
+					Line 5 "" "Automation $cnt"
+					Line 6 "Enabled : $($Item.Enabled.ToString())"
+					Line 6 "Title   : $($Item.Title)"
+					Line 6 "Command : $($Item.Command)"
+					Line 6 "Image   : $($Item.Image)"
+					Line 6 "Autosend: $($Item.AutoSend.ToString())"
+					Line 5 "" "" #blank separator line
+				}
 				Line 0 ""
 			}
 			ElseIf($RAS2FASettings.Provider -eq "Deepnet")
 			{
-				Line 4 "Type`t`t: " $RAS2FASettings.DeepnetSettings.DeepnetType
-				Line 4 "Server`t`t: " $RAS2FASettings.DeepnetSettings.Server
-				Line 4 "Port`t`t: " $RAS2FASettings.DeepnetSettings.Port.ToString()
-				Line 4 "Enable SSL`t: " $RAS2FASettings.DeepnetSettings.SSL.ToString()
-				Line 4 "Agent`t`t: " $RAS2FASettings.DeepnetAgent.Server
+				Line 4 "Connection"
+				Line 5 "Type`t`t: " $RAS2FASettings.DeepnetSettings.DeepnetType
+				Line 5 "Server`t`t: " $RAS2FASettings.DeepnetSettings.Server
+				Line 5 "Port`t`t: " $RAS2FASettings.DeepnetSettings.Port.ToString()
+				Line 5 "Enable SSL`t: " $RAS2FASettings.DeepnetSettings.SSL.ToString()
+				Line 5 "Agent`t`t: " $RAS2FASettings.DeepnetSettings.DeepnetAgent
+				Line 4 "Application"
+				Line 5 "          Application`t: " $RAS2FASettings.DeepnetSettings.App
+				Line 5 "          Domain`t: " $RAS2FASettings.DeepnetSettings.DefaultDomain
+				Line 4 "Authentication"
+				Line 5 "          Mode`t`t: " $DeepNetAuthMode
+				Line 5 "          Token Type`t: " $RAS2FASettings.DeepnetSettings.TokenType.ToString()
+				#Line 5 "          Allow Channels: " $RAS2FASettings.DeepnetSettings.
 			}
 			ElseIf($RAS2FASettings.Provider -eq "SafeNet")
 			{
@@ -30666,111 +30961,249 @@ Function Output2FASetting
 		{
 			If($RAS2FASettings.Provider -eq "AzureRadius")
 			{
-				$rowdata += @(,("     Type Name",($Script:htmlsb),$RAS2FASettings.AzureRadiusSettings.TypeName,$htmlwhite))
-				$rowdata += @(,("     Primary Server",($Script:htmlsb),$RAS2FASettings.AzureRadiusSettings.Server,$htmlwhite))
-				$rowdata += @(,( "     Secondary server",($Script:htmlsb), $RAS2FASettings.AzureRadiusSettings.BackupServer,$htmlwhite))
+				$rowdata += @(,( "     Connection",($Script:htmlsb),"",$htmlwhite))
+				$rowdata += @(,("          Type Name",($Script:htmlsb),$RAS2FASettings.AzureRadiusSettings.TypeName,$htmlwhite))
+				$rowdata += @(,("          Primary Server",($Script:htmlsb),$RAS2FASettings.AzureRadiusSettings.Server,$htmlwhite))
+				$rowdata += @(,("          Secondary server",($Script:htmlsb), $RAS2FASettings.AzureRadiusSettings.BackupServer,$htmlwhite))
 				If($RAS2FASettings.AzureRadiusSettings.HAMode -eq "Parallel")
 				{
-					$rowdata += @(,( "     HA mode",($Script:htmlsb), "Active - active (parallel)",$htmlwhite))
+					$rowdata += @(,("          HA mode",($Script:htmlsb), "Active - active (parallel)",$htmlwhite))
 				}
 				Else
 				{
-					$rowdata += @(,( "     HA mode",($Script:htmlsb), "Active - passive (failover)",$htmlwhite))
+					$rowdata += @(,("          HA mode",($Script:htmlsb), "Active - passive (failover)",$htmlwhite))
 				}
-				$rowdata += @(,("     Port",($Script:htmlsb),$RAS2FASettings.AzureRadiusSettings.Port,$htmlwhite))
-				$rowdata += @(,("     Timeout",($Script:htmlsb),$RAS2FASettings.AzureRadiusSettings.Timeout,$htmlwhite))
-				$rowdata += @(,("     Retries",($Script:htmlsb),$RAS2FASettings.AzureRadiusSettings.Retries,$htmlwhite))
-				$rowdata += @(,("     Password Encoding",($Script:htmlsb),$RAS2FASettings.AzureRadiusSettings.PasswordEncoding.ToString(),$htmlwhite))
-				$rowdata += @(,("     Forward username only to Radius Server",($Script:htmlsb),$RAS2FASettings.AzureRadiusSettings.UsernameOnly.ToString(),$htmlwhite))
-				$rowdata += @(,("     Forward the first password to Windows authentication provider",($Script:htmlsb),$RAS2FASettings.AzureRadiusSettings.ForwardFirstPwdToAD.ToString(),$htmlwhite))
+				$rowdata += @(,("          Port",($Script:htmlsb),$RAS2FASettings.AzureRadiusSettings.Port,$htmlwhite))
+				$rowdata += @(,("          Timeout",($Script:htmlsb),$RAS2FASettings.AzureRadiusSettings.Timeout,$htmlwhite))
+				$rowdata += @(,("          Retries",($Script:htmlsb),$RAS2FASettings.AzureRadiusSettings.Retries,$htmlwhite))
+				$rowdata += @(,("          Password Encoding",($Script:htmlsb),$RAS2FASettings.AzureRadiusSettings.PasswordEncoding.ToString(),$htmlwhite))
+				$rowdata += @(,("          Forward username only to Radius Server",($Script:htmlsb),$RAS2FASettings.AzureRadiusSettings.UsernameOnly.ToString(),$htmlwhite))
+				$rowdata += @(,("          Forward the first password to Windows authentication provider",($Script:htmlsb),$RAS2FASettings.AzureRadiusSettings.ForwardFirstPwdToAD.ToString(),$htmlwhite))
+				$rowdata += @(,( "     Attributes",($Script:htmlsb),"",$htmlwhite))
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.AzureRadiusSettings.AttributeInfoList)
+				{
+					$cnt++
+					$rowdata += @(,( "",($Script:htmlsb), "Attribute $cnt",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Name: $($Item.Name)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Vendor: $($Item.Vendor)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Type: $($Item.AttributeType)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Value: $($Item.Value)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "",$htmlwhite)) #blank separator line
+				}
+				$rowdata += @(,( "     Automation",($Script:htmlsb),"",$htmlwhite))
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.AzureRadiusSettings.AutomationInfoList)
+				{
+					$cnt++
+					$rowdata += @(,( "",($Script:htmlsb), "Automation $cnt",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Enabled: $($Item.Enabled.ToString())",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Title: $($Item.Title)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Command: $($Item.Command)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Image: $($Item.Image)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Autosend: $($Item.AutoSend.ToString())",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "",$htmlwhite)) #blank separator line
+				}
 			}
 			ElseIf($RAS2FASettings.Provider -eq "DuoRadius")
 			{
-				$rowdata += @(,("     Type Name",($Script:htmlsb),$RAS2FASettings.DuoRadiusSettings.TypeName,$htmlwhite))
-				$rowdata += @(,("     Primary Server",($Script:htmlsb),$RAS2FASettings.DuoRadiusSettings.Server,$htmlwhite))
-				$rowdata += @(,( "     Secondary server",($Script:htmlsb), $RAS2FASettings.DuoRadiusSettings.BackupServer,$htmlwhite))
+				$rowdata += @(,( "     Connection",($Script:htmlsb),"",$htmlwhite))
+				$rowdata += @(,("          Type Name",($Script:htmlsb),$RAS2FASettings.DuoRadiusSettings.TypeName,$htmlwhite))
+				$rowdata += @(,("          Primary Server",($Script:htmlsb),$RAS2FASettings.DuoRadiusSettings.Server,$htmlwhite))
+				$rowdata += @(,( "          Secondary server",($Script:htmlsb), $RAS2FASettings.DuoRadiusSettings.BackupServer,$htmlwhite))
 				If($RAS2FASettings.DuoRadiusSettings.HAMode -eq "Parallel")
 				{
-					$rowdata += @(,( "     HA mode",($Script:htmlsb), "Active - active (parallel)",$htmlwhite))
+					$rowdata += @(,( "          HA mode",($Script:htmlsb), "Active - active (parallel)",$htmlwhite))
 				}
 				Else
 				{
-					$rowdata += @(,( "     HA mode",($Script:htmlsb), "Active - passive (failover)",$htmlwhite))
+					$rowdata += @(,( "          HA mode",($Script:htmlsb), "Active - passive (failover)",$htmlwhite))
 				}
-				$rowdata += @(,("     Port",($Script:htmlsb),$RAS2FASettings.DuoRadiusSettings.Port,$htmlwhite))
-				$rowdata += @(,("     Timeout",($Script:htmlsb),$RAS2FASettings.DuoRadiusSettings.Timeout,$htmlwhite))
-				$rowdata += @(,("     Retries",($Script:htmlsb),$RAS2FASettings.DuoRadiusSettings.Retries,$htmlwhite))
-				$rowdata += @(,("     Password Encoding",($Script:htmlsb),$RAS2FASettings.DuoRadiusSettings.PasswordEncoding.ToString(),$htmlwhite))
-				$rowdata += @(,("     Forward username only to Radius Server",($Script:htmlsb),$RAS2FASettings.DuoRadiusSettings.UsernameOnly.ToString(),$htmlwhite))
-				$rowdata += @(,("     Forward the first password to Windows authentication provider",($Script:htmlsb),$RAS2FASettings.DuoRadiusSettings.ForwardFirstPwdToAD.ToString(),$htmlwhite))
+				$rowdata += @(,("          Port",($Script:htmlsb),$RAS2FASettings.DuoRadiusSettings.Port,$htmlwhite))
+				$rowdata += @(,("          Timeout",($Script:htmlsb),$RAS2FASettings.DuoRadiusSettings.Timeout,$htmlwhite))
+				$rowdata += @(,("          Retries",($Script:htmlsb),$RAS2FASettings.DuoRadiusSettings.Retries,$htmlwhite))
+				$rowdata += @(,("          Password Encoding",($Script:htmlsb),$RAS2FASettings.DuoRadiusSettings.PasswordEncoding.ToString(),$htmlwhite))
+				$rowdata += @(,("          Forward username only to Radius Server",($Script:htmlsb),$RAS2FASettings.DuoRadiusSettings.UsernameOnly.ToString(),$htmlwhite))
+				$rowdata += @(,("          Forward the first password to Windows authentication provider",($Script:htmlsb),$RAS2FASettings.DuoRadiusSettings.ForwardFirstPwdToAD.ToString(),$htmlwhite))
+				$rowdata += @(,( "     Attributes",($Script:htmlsb),"",$htmlwhite))
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.DuoRadiusSettings.AttributeInfoList)
+				{
+					$cnt++
+					$rowdata += @(,( "",($Script:htmlsb), "Attribute $cnt",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Name: $($Item.Name)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Vendor: $($Item.Vendor)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Type: $($Item.AttributeType)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Value: $($Item.Value)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "",$htmlwhite)) #blank separator line
+				}
+				$rowdata += @(,( "     Automation",($Script:htmlsb),"",$htmlwhite))
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.DuoRadiusSettings.AutomationInfoList)
+				{
+					$cnt++
+					$rowdata += @(,( "",($Script:htmlsb), "Automation $cnt",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Enabled: $($Item.Enabled.ToString())",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Title: $($Item.Title)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Command: $($Item.Command)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Image: $($Item.Image)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Autosend: $($Item.AutoSend.ToString())",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "",$htmlwhite)) #blank separator line
+				}
 			}
 			ElseIf($RAS2FASettings.Provider -eq "FortiRadius")
 			{
-				$rowdata += @(,("     Type Name",($Script:htmlsb),$RAS2FASettings.FortiRadiusSettings.TypeName,$htmlwhite))
-				$rowdata += @(,("     Primary Server",($Script:htmlsb),$RAS2FASettings.FortiRadiusSettings.Server,$htmlwhite))
-				$rowdata += @(,( "     Secondary server",($Script:htmlsb), $RAS2FASettings.FortiRadiusSettings.BackupServer,$htmlwhite))
+				$rowdata += @(,( "     Connection",($Script:htmlsb),"",$htmlwhite))
+				$rowdata += @(,("          Type Name",($Script:htmlsb),$RAS2FASettings.FortiRadiusSettings.TypeName,$htmlwhite))
+				$rowdata += @(,("          Primary Server",($Script:htmlsb),$RAS2FASettings.FortiRadiusSettings.Server,$htmlwhite))
+				$rowdata += @(,( "          Secondary server",($Script:htmlsb), $RAS2FASettings.FortiRadiusSettings.BackupServer,$htmlwhite))
 				If($RAS2FASettings.FortiRadiusSettings.HAMode -eq "Parallel")
 				{
-					$rowdata += @(,( "     HA mode",($Script:htmlsb), "Active - active (parallel)",$htmlwhite))
+					$rowdata += @(,( "          HA mode",($Script:htmlsb), "Active - active (parallel)",$htmlwhite))
 				}
 				Else
 				{
-					$rowdata += @(,( "     HA mode",($Script:htmlsb), "Active - passive (failover)",$htmlwhite))
+					$rowdata += @(,( "          HA mode",($Script:htmlsb), "Active - passive (failover)",$htmlwhite))
 				}
-				$rowdata += @(,("     Port",($Script:htmlsb),$RAS2FASettings.FortiRadiusSettings.Port,$htmlwhite))
-				$rowdata += @(,("     Timeout",($Script:htmlsb),$RAS2FASettings.FortiRadiusSettings.Timeout,$htmlwhite))
-				$rowdata += @(,("     Retries",($Script:htmlsb),$RAS2FASettings.FortiRadiusSettings.Retries,$htmlwhite))
-				$rowdata += @(,("     Password Encoding",($Script:htmlsb),$RAS2FASettings.FortiRadiusSettings.PasswordEncoding.ToString(),$htmlwhite))
-				$rowdata += @(,("     Forward username only to Radius Server",($Script:htmlsb),$RAS2FASettings.FortiRadiusSettings.UsernameOnly.ToString(),$htmlwhite))
-				$rowdata += @(,("     Forward the first password to Windows authentication provider",($Script:htmlsb),$RAS2FASettings.FortiRadiusSettings.ForwardFirstPwdToAD.ToString(),$htmlwhite))
+				$rowdata += @(,("          Port",($Script:htmlsb),$RAS2FASettings.FortiRadiusSettings.Port,$htmlwhite))
+				$rowdata += @(,("          Timeout",($Script:htmlsb),$RAS2FASettings.FortiRadiusSettings.Timeout,$htmlwhite))
+				$rowdata += @(,("          Retries",($Script:htmlsb),$RAS2FASettings.FortiRadiusSettings.Retries,$htmlwhite))
+				$rowdata += @(,("          Password Encoding",($Script:htmlsb),$RAS2FASettings.FortiRadiusSettings.PasswordEncoding.ToString(),$htmlwhite))
+				$rowdata += @(,("          Forward username only to Radius Server",($Script:htmlsb),$RAS2FASettings.FortiRadiusSettings.UsernameOnly.ToString(),$htmlwhite))
+				$rowdata += @(,("          Forward the first password to Windows authentication provider",($Script:htmlsb),$RAS2FASettings.FortiRadiusSettings.ForwardFirstPwdToAD.ToString(),$htmlwhite))
+				$rowdata += @(,( "     Attributes",($Script:htmlsb),"",$htmlwhite))
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.FortiRadiusSettings.AttributeInfoList)
+				{
+					$cnt++
+					$rowdata += @(,( "",($Script:htmlsb), "Attribute $cnt",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Name: $($Item.Name)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Vendor: $($Item.Vendor)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Type: $($Item.AttributeType)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Value: $($Item.Value)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "",$htmlwhite)) #blank separator line
+				}
+				$rowdata += @(,( "     Automation",($Script:htmlsb),"",$htmlwhite))
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.FortiRadiusSettings.AutomationInfoList)
+				{
+					$cnt++
+					$rowdata += @(,( "",($Script:htmlsb), "Automation $cnt",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Enabled: $($Item.Enabled.ToString())",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Title: $($Item.Title)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Command: $($Item.Command)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Image: $($Item.Image)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Autosend: $($Item.AutoSend.ToString())",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "",$htmlwhite)) #blank separator line
+				}
 			}
 			ElseIf($RAS2FASettings.Provider -eq "TekRadius")
 			{
-				$rowdata += @(,("     Type Name",($Script:htmlsb),$RAS2FASettings.TekRadiusSettings.TypeName,$htmlwhite))
-				$rowdata += @(,("     Primary Server",($Script:htmlsb),$RAS2FASettings.TekRadiusSettings.Server,$htmlwhite))
-				$rowdata += @(,( "     Secondary server",($Script:htmlsb), $RAS2FASettings.TekRadiusSettings.BackupServer,$htmlwhite))
+				$rowdata += @(,( "     Connection",($Script:htmlsb),"",$htmlwhite))
+				$rowdata += @(,("          Type Name",($Script:htmlsb),$RAS2FASettings.TekRadiusSettings.TypeName,$htmlwhite))
+				$rowdata += @(,("          Primary Server",($Script:htmlsb),$RAS2FASettings.TekRadiusSettings.Server,$htmlwhite))
+				$rowdata += @(,( "          Secondary server",($Script:htmlsb), $RAS2FASettings.TekRadiusSettings.BackupServer,$htmlwhite))
 				If($RAS2FASettings.TekRadiusSettings.HAMode -eq "Parallel")
 				{
-					$rowdata += @(,( "     HA mode",($Script:htmlsb), "Active - active (parallel)",$htmlwhite))
+					$rowdata += @(,( "          HA mode",($Script:htmlsb), "Active - active (parallel)",$htmlwhite))
 				}
 				Else
 				{
-					$rowdata += @(,( "     HA mode",($Script:htmlsb), "Active - passive (failover)",$htmlwhite))
+					$rowdata += @(,( "          HA mode",($Script:htmlsb), "Active - passive (failover)",$htmlwhite))
 				}
-				$rowdata += @(,("     Port",($Script:htmlsb),$RAS2FASettings.TekRadiusSettings.Port,$htmlwhite))
-				$rowdata += @(,("     Timeout",($Script:htmlsb),$RAS2FASettings.TekRadiusSettings.Timeout,$htmlwhite))
-				$rowdata += @(,("     Retries",($Script:htmlsb),$RAS2FASettings.TekRadiusSettings.Retries,$htmlwhite))
-				$rowdata += @(,("     Password Encoding",($Script:htmlsb),$RAS2FASettings.TekRadiusSettings.PasswordEncoding.ToString(),$htmlwhite))
-				$rowdata += @(,("     Forward username only to Radius Server",($Script:htmlsb),$RAS2FASettings.TekRadiusSettings.UsernameOnly.ToString(),$htmlwhite))
-				$rowdata += @(,("     Forward the first password to Windows authentication provider",($Script:htmlsb),$RAS2FASettings.TekRadiusSettings.ForwardFirstPwdToAD.ToString(),$htmlwhite))
+				$rowdata += @(,("          Port",($Script:htmlsb),$RAS2FASettings.TekRadiusSettings.Port,$htmlwhite))
+				$rowdata += @(,("          Timeout",($Script:htmlsb),$RAS2FASettings.TekRadiusSettings.Timeout,$htmlwhite))
+				$rowdata += @(,("          Retries",($Script:htmlsb),$RAS2FASettings.TekRadiusSettings.Retries,$htmlwhite))
+				$rowdata += @(,("          Password Encoding",($Script:htmlsb),$RAS2FASettings.TekRadiusSettings.PasswordEncoding.ToString(),$htmlwhite))
+				$rowdata += @(,("          Forward username only to Radius Server",($Script:htmlsb),$RAS2FASettings.TekRadiusSettings.UsernameOnly.ToString(),$htmlwhite))
+				$rowdata += @(,("          Forward the first password to Windows authentication provider",($Script:htmlsb),$RAS2FASettings.TekRadiusSettings.ForwardFirstPwdToAD.ToString(),$htmlwhite))
+				$rowdata += @(,( "     Attributes",($Script:htmlsb),"",$htmlwhite))
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.TekRadiusSettings.AttributeInfoList)
+				{
+					$cnt++
+					$rowdata += @(,( "",($Script:htmlsb), "Attribute $cnt",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Name: $($Item.Name)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Vendor: $($Item.Vendor)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Type: $($Item.AttributeType)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Value: $($Item.Value)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "",$htmlwhite)) #blank separator line
+				}
+				$rowdata += @(,( "     Automation",($Script:htmlsb),"",$htmlwhite))
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.TekRadiusSettings.AutomationInfoList)
+				{
+					$cnt++
+					$rowdata += @(,( "",($Script:htmlsb), "Automation $cnt",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Enabled: $($Item.Enabled.ToString())",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Title: $($Item.Title)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Command: $($Item.Command)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Image: $($Item.Image)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Autosend: $($Item.AutoSend.ToString())",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "",$htmlwhite)) #blank separator line
+				}
 			}
 			ElseIf($RAS2FASettings.Provider -eq "Radius")
 			{
-				$rowdata += @(,("     Type Name",($Script:htmlsb),$RAS2FASettings.RadiusSettings.TypeName,$htmlwhite))
-				$rowdata += @(,("     Primary Server",($Script:htmlsb),$RAS2FASettings.RadiusSettings.Server,$htmlwhite))
-				$rowdata += @(,( "     Secondary server",($Script:htmlsb), $RAS2FASettings.RadiusSettings.BackupServer,$htmlwhite))
+				$rowdata += @(,( "     Connection",($Script:htmlsb),"",$htmlwhite))
+				$rowdata += @(,("          Type Name",($Script:htmlsb),$RAS2FASettings.RadiusSettings.TypeName,$htmlwhite))
+				$rowdata += @(,("          Primary Server",($Script:htmlsb),$RAS2FASettings.RadiusSettings.Server,$htmlwhite))
+				$rowdata += @(,( "          Secondary server",($Script:htmlsb), $RAS2FASettings.RadiusSettings.BackupServer,$htmlwhite))
 				If($RAS2FASettings.RadiusSettings.HAMode -eq "Parallel")
 				{
-					$rowdata += @(,( "     HA mode",($Script:htmlsb), "Active - active (parallel)",$htmlwhite))
+					$rowdata += @(,( "          HA mode",($Script:htmlsb), "Active - active (parallel)",$htmlwhite))
 				}
 				Else
 				{
-					$rowdata += @(,( "     HA mode",($Script:htmlsb), "Active - passive (failover)",$htmlwhite))
+					$rowdata += @(,( "          HA mode",($Script:htmlsb), "Active - passive (failover)",$htmlwhite))
 				}
-				$rowdata += @(,("     Port",($Script:htmlsb),$RAS2FASettings.RadiusSettings.Port,$htmlwhite))
-				$rowdata += @(,("     Timeout",($Script:htmlsb),$RAS2FASettings.RadiusSettings.Timeout,$htmlwhite))
-				$rowdata += @(,("     Retries",($Script:htmlsb),$RAS2FASettings.RadiusSettings.Retries,$htmlwhite))
-				$rowdata += @(,("     Password Encoding",($Script:htmlsb),$RAS2FASettings.RadiusSettings.PasswordEncoding.ToString(),$htmlwhite))
-				$rowdata += @(,("     Forward username only to Radius Server",($Script:htmlsb),$RAS2FASettings.RadiusSettings.UsernameOnly.ToString(),$htmlwhite))
-				$rowdata += @(,("     Forward the first password to Windows authentication provider",($Script:htmlsb),$RAS2FASettings.RadiusSettings.ForwardFirstPwdToAD.ToString(),$htmlwhite))
+				$rowdata += @(,("          Port",($Script:htmlsb),$RAS2FASettings.RadiusSettings.Port,$htmlwhite))
+				$rowdata += @(,("          Timeout",($Script:htmlsb),$RAS2FASettings.RadiusSettings.Timeout,$htmlwhite))
+				$rowdata += @(,("          Retries",($Script:htmlsb),$RAS2FASettings.RadiusSettings.Retries,$htmlwhite))
+				$rowdata += @(,("          Password Encoding",($Script:htmlsb),$RAS2FASettings.RadiusSettings.PasswordEncoding.ToString(),$htmlwhite))
+				$rowdata += @(,("          Forward username only to Radius Server",($Script:htmlsb),$RAS2FASettings.RadiusSettings.UsernameOnly.ToString(),$htmlwhite))
+				$rowdata += @(,("          Forward the first password to Windows authentication provider",($Script:htmlsb),$RAS2FASettings.RadiusSettings.ForwardFirstPwdToAD.ToString(),$htmlwhite))
+				$rowdata += @(,( "     Attributes",($Script:htmlsb),"",$htmlwhite))
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.RadiusSettings.AttributeInfoList)
+				{
+					$cnt++
+					$rowdata += @(,( "",($Script:htmlsb), "Attribute $cnt",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Name: $($Item.Name)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Vendor: $($Item.Vendor)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Type: $($Item.AttributeType)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Value: $($Item.Value)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "",$htmlwhite)) #blank separator line
+				}
+				$rowdata += @(,( "     Automation",($Script:htmlsb),"",$htmlwhite))
+				$cnt=0
+				ForEach($Item in $RAS2FASettings.RadiusSettings.AutomationInfoList)
+				{
+					$cnt++
+					$rowdata += @(,( "",($Script:htmlsb), "Automation $cnt",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Enabled: $($Item.Enabled.ToString())",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Title: $($Item.Title)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Command: $($Item.Command)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Image: $($Item.Image)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Autosend: $($Item.AutoSend.ToString())",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "",$htmlwhite)) #blank separator line
+				}
 			}
 			ElseIf($RAS2FASettings.Provider -eq "Deepnet")
 			{
-				$rowdata += @(,( "     Type",($Script:htmlsb), $RAS2FASettings.DeepnetSettings.DeepnetType,$htmlwhite))
-				$rowdata += @(,( "     Server",($Script:htmlsb), $RAS2FASettings.DeepnetSettings.Server,$htmlwhite))
-				$rowdata += @(,( "     Port",($Script:htmlsb), $RAS2FASettings.DeepnetSettings.Port.ToString(),$htmlwhite))
-				$rowdata += @(,( "     Enable SSL",($Script:htmlsb), $RAS2FASettings.DeepnetSettings.SSL.ToString(),$htmlwhite))
-				$rowdata += @(,( "     Agent",($Script:htmlsb), $RAS2FASettings.DeepnetAgent.Server,$htmlwhite))
+				$rowdata += @(,( "     Connection",($Script:htmlsb),"",$htmlwhite))
+				$rowdata += @(,( "          Type",($Script:htmlsb), $RAS2FASettings.DeepnetSettings.DeepnetType,$htmlwhite))
+				$rowdata += @(,( "          Server",($Script:htmlsb), $RAS2FASettings.DeepnetSettings.Server,$htmlwhite))
+				$rowdata += @(,( "          Port",($Script:htmlsb), $RAS2FASettings.DeepnetSettings.Port.ToString(),$htmlwhite))
+				$rowdata += @(,( "          Enable SSL",($Script:htmlsb), $RAS2FASettings.DeepnetSettings.SSL.ToString(),$htmlwhite))
+				$rowdata += @(,( "          Agent",($Script:htmlsb), $RAS2FASettings.DeepnetSettings.DeepnetAgent,$htmlwhite))
+				$rowdata += @(,( "     Application",($Script:htmlsb),"",$htmlwhite))
+				$rowdata += @(,( "          Application",($Script:htmlsb), $RAS2FASettings.DeepnetSettings.App,$htmlwhite))
+				$rowdata += @(,( "          Domain",($Script:htmlsb), $RAS2FASettings.DeepnetSettings.DefaultDomain,$htmlwhite))
+				$rowdata += @(,( "     Authentication",($Script:htmlsb),"",$htmlwhite))
+				$rowdata += @(,( "          Mode",($Script:htmlsb), $DeepNetAuthMode,$htmlwhite))
+				$rowdata += @(,( "          Token Type",($Script:htmlsb), $RAS2FASettings.DeepnetSettings.TokenType.ToString(),$htmlwhite))
+				#$rowdata += @(,( "          Allow Channels",($Script:htmlsb), $RAS2FASettings.DeepnetSettings.,$htmlwhite))
 			}
 			ElseIf($RAS2FASettings.Provider -eq "SafeNet")
 			{

@@ -49,7 +49,7 @@
 #		Session/Local devices and resources/Clipboard
 #		Session/Local devices and resources/Disk drives
 #		Session/Local devices and resources/Devices
-#		Session/Local devices and resources/Video capture devices
+#		Session/Local devices and resources/Video capture devices (not in PowerShell yet)
 #		Session/Local devices and resources/Ports
 #		Session/Local devices and resources/Smart cards
 #		Session/Local devices and resources/Windows touch input
@@ -99,7 +99,19 @@
 #		Disable MFA for all users except
 #		User or group list
 #		Updated all items and text to match the console (a lot of work)
-#		Added what I could for DeepNet and SafeNet Providers
+#		Added for Azure RADIUS, Duo RADIUS, FortiAuthenticator RADIUS, TekRADIUS, and RADIUS
+#			Connection
+#			Attributes
+#			Automation
+#		Added DeepNet Provider
+#			Connection
+#			Application
+#			Authentication
+#		Added SafeNet Provider
+#			Connection
+#			Authentication
+#		Added Google Authenticator
+#			General
 #	Added to Gateway and Gateway Default Settings:
 #		HTML5/Allow cross-origin resource sharing
 #			Domains for cross-origin resource sharing
@@ -127,6 +139,8 @@
 #		"Support Shell URL namespace objects" to "Support Windows Shell URL namespace objects"
 #	Removed the Restrictions label from Gateways/HTML5 as it is no longer in the console
 #	Updated Function GetVDIType with Hypervisor data for ESXi 7.0 and vCenter 7.0
+#	Updated the Help text
+#	Updated the ReadMe file
 
 #Version 2.10 25-Apr-2021
 #	Fixed wrong variables used to determine User Profile technology
