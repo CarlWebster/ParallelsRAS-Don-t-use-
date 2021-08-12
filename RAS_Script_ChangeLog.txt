@@ -13,6 +13,135 @@
 #Version 1.0 released to the community on 5-August-2020
 #
 
+#Version 2.50 12-Aug-2021
+#	Added a version test so the script only works with RAS 18.1
+#	Added documenting (my best attempt) an Azure provider connection
+#	Added Certificates
+#		Alternate Names
+#		General
+#			Alternate Names
+#	Added Policies summary
+#	Added Policy Properties (took five days for this one section)
+#		Policy
+#		Policy/Criteria
+#		Session
+#		Session/Connection
+#		Session/Connection/Primary connection
+#		Session/Connection/Secondary connections
+#		Session/Connection/Reconnection
+#		Session/Connection/Computer name
+#		Session/Connection/Advanced settings
+#		Session/Connection/Web authentication
+#		Session/Connection/Multifactor authentication
+#		Session/Connection/Session prelaunch
+#		Session/Connection/Local proxy address
+#		Session/Display
+#		Session/Display/Settings
+#		Session/Display/Multi-monitor
+#		Session/Display/Published applications
+#		Session/Display/Desktop options
+#		Session/Display/Browser
+#		Session/Printing
+#		Session/Scanning
+#		Session/Audio
+#		Session/Keyboard
+#		Session/Local devices and resources
+#		Session/Local devices and resources/Clipboard
+#		Session/Local devices and resources/Disk drives
+#		Session/Local devices and resources/Devices
+#		Session/Local devices and resources/Video capture devices (not in PowerShell yet)
+#		Session/Local devices and resources/Ports
+#		Session/Local devices and resources/Smart cards
+#		Session/Local devices and resources/Windows touch input
+#		Session/Local devices and resources/File transfer
+#		Session/Experience
+#		Session/Experience/Performance
+#		Session/Experience/Compression
+#		Session/Network
+#		Session/Server authentication
+#		Session/Advanced settings
+#		Client options
+#		Client options/Connection
+#		Client options/Logging
+#		Client options/Update
+#		Client options/PC keyboard
+#		Client options/Single Sign-On
+#		Client options/Advanced
+#		Client options/Advanced/Global
+#		Client options/Advanced/Language
+#		Client options/Advanced/Printing
+#		Client options/Advanced/Windows client
+#		Client options/Advanced/RemoteFX USB redirection
+#		Control settings
+#		Control settings/Connections
+#		Control settings/Password
+#		Control settings/Import and export
+#		Redirection
+#	Added Reporting
+#		RAS reporting configuration
+#			Session information
+#			Server counters information
+#			Custom reports
+#		RAS Performance Monitor configuration
+#	Added Themes
+#		General
+#		Messages
+#		HTML5 client/Branding
+#		HTML5 client/Language bar
+#		HTML5 client/Messages
+#		HTML5 client/Gateway
+#		HTML5 client/Legal policies
+#		Windows client/Branding
+#		Windows client/Messages
+#		Windows client/Custom menu
+#	Added to Connection/Multi-factor authentication:
+#		Enable MFA for all users except
+#		Disable MFA for all users except
+#		User or group list
+#		Updated all items and text to match the console (a lot of work)
+#		Added for Azure RADIUS, Duo RADIUS, FortiAuthenticator RADIUS, TekRADIUS, and RADIUS
+#			Connection
+#			Attributes
+#			Automation
+#		Added DeepNet Provider
+#			Connection
+#			Application
+#			Authentication
+#		Added SafeNet Provider
+#			Connection
+#			Authentication
+#		Added Google Authenticator
+#			General
+#	Added to Gateway and Gateway Default Settings:
+#		HTML5/Allow cross-origin resource sharing
+#			Domains for cross-origin resource sharing
+#			Browser cache time in months
+#		HTML5/Clipboard redirection
+#		HTML5/File Transfer Direction
+#		HTML5/Use ciphers according to server preference
+#		Wyse/Do not warn if server certificate is not verified
+#	Added to Provider/Agent settings Drag and drop
+#	Added to Published Items their Status
+#		Disabled
+#		Enabled
+#		In maintenance
+#	Added to RD Session Host, RD Session Host Groups, Provider and Default Site Settings:
+#		Agent settings/File Transfer Direction
+#		Agent settings/File Transfer Location
+#		Agent settings/File Transfer Do not allow to change location
+#	Change the wording in Connection/Authentication and Multi-factor authentication to match the console
+#	Fixed a lot of HTML and text formatting issues
+#	In Certificates/General, moved Expiration date to before Common name
+#	In Published Resources, only show Associated File Extensions if the EnableFileExtensions property is True
+#		If you add file extensions and later disable file extensions, the extensions previously entered are still there
+#	Renamed in Gateway/SSL/TLS/HSTS settings "Max-age" to "Browse cache time in months"
+#	Renamed in RDS Host/Agent, RDS Group/Agent, and Provider/Agent settings:
+#		"Support Shell URL namespace objects" to "Support Windows Shell URL namespace objects"
+#	Removed the Restrictions label from Gateways/HTML5 as it is no longer in the console
+#	Updated Function GetVDIType with Hypervisor data for ESXi 7.0 and vCenter 7.0
+#	Updated the Help text
+#	Updated the ReadMe file
+
 #Version 2.10 25-Apr-2021
 #	Fixed wrong variables used to determine User Profile technology
 #	For RD Session Hosts properties:
