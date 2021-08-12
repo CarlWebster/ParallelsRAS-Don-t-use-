@@ -387,7 +387,7 @@
 	NAME: RAS_Inventory_V2.5.ps1
 	VERSION: 2.50
 	AUTHOR: Carl Webster
-	LASTEDIT: August 11, 2021 Update 11
+	LASTEDIT: August 12, 2021
 #>
 
 
@@ -494,7 +494,7 @@ Param(
 #Version 1.0 released to the community on 5-August-2020
 #Work on 2.0 started on 20-Sep-2020
 #
-#Version 2.50
+#Version 2.50 12-Aug-2021
 #	Added a version test so the script only works with RAS 18.1
 #	Added documenting (my best attempt) an Azure provider connection
 #	Added Certificates
@@ -4195,7 +4195,7 @@ Function OutputFarmSite
 		}
 		Else
 		{
-			$Description = ""
+			$Description = "-"
 		}
 		
 		$PrimaryPublishingAgent = $SiteSettings.Server
@@ -5796,7 +5796,7 @@ Function OutputSite
 				Line 4 "Publishing Session Disconnect Timeout`t`t`t: " $RDSPublishingSessionDisconnectTimeout
 				Line 4 "Publishing Session Reset Timeout`t`t`t: " $RDSPublishingSessionResetTime
 				Line 4 "Allow Client URL/Mail Redirection`t`t`t: " $RDSAllowClientURLMailRedirection
-				Line 4 "Support Windows Shell URL namespace objects`t`t`t: " $RDSSupportShellURLNamespaceObject
+				Line 4 "Support Windows Shell URL namespace objects`t`t: " $RDSSupportShellURLNamespaceObject
 				Line 4 "Drag and drop`t`t`t`t`t`t: " $RDSDragAndDrop
 				Line 4 "Preferred Publishing Agent`t`t`t`t: " $RDSPreferredPublishingAgent
 				Line 4 "Allow 2xRemoteExec to send command to the client`t: " $RDSAllowRemoteExec
@@ -6424,7 +6424,7 @@ Function OutputSite
 						{
 							#unable to retrieve default, use built-in default values
 							$RDSUPDState                                    = "Do not change"
-							$RDSUPDLocation                                 = ""
+							$RDSUPDLocation                                 = "None"
 							$RDSUPDSize                                     = "20"
 							$RDSTechnology                                  = "Do not manage by RAS"
 							$RDSUPDRoamingMode                              = "Exclude"
@@ -6432,25 +6432,25 @@ Function OutputSite
 							$RDSUPDExcludeFolderPath                        = @()
 							$RDSUPDIncludeFilePath                          = @()
 							$RDSUPDIncludeFolderPath                        = @()
-							$FSLogixDeploymentSettingsDeploymentMethod      = ""
-							$FSLogixDeploymentSettingsInstallOnlineURL      = ""
-							$FSLogixDeploymentSettingsNetworkDrivePath      = ""
-							$FSLogixDeploymentSettingsInstallerFileName     = ""
+							$FSLogixDeploymentSettingsDeploymentMethod      = "None"
+							$FSLogixDeploymentSettingsInstallOnlineURL      = "None"
+							$FSLogixDeploymentSettingsNetworkDrivePath      = "None"
+							$FSLogixDeploymentSettingsInstallerFileName     = "None"
 							$FSLogixDeploymentSettingsReplicate             = $False
-							$FSLogixLocationType                            = ""
+							$FSLogixLocationType                            = "None"
 							$FSLogixLocationOfProfileDisks                  = @()
-							$FSLogixProfileDiskFormat                       = ""
-							$FSLogixAllocationType                          = ""
+							$FSLogixProfileDiskFormat                       = "None"
+							$FSLogixAllocationType                          = "None"
 							$FSLogixDefaultSize                             = "0"
 							$FSLogixSettingsUserInclusionList               = @("Everyone")
 							$FSLogixSettingsUserExclusionList               = @()
 							$FSLogixSettingsCustomizeProfileFolders         = $False
-							$FSLogixSettingsExcludeCommonFolders            = ""
+							$FSLogixSettingsExcludeCommonFolders            = "None"
 							$ExcludedCommonFolders                          = @()
 							$FSLogixSettingsFolderInclusionList             = @()
 							$FSLogixSettingsFolderExclusionList             = @()
 							$FSLogixAS_AccessNetworkAsComputerObject        = "Disable"
-							$FSLogixAS_AttachVHDSDDL                        = ""
+							$FSLogixAS_AttachVHDSDDL                        = "None"
 							$FSLogixAS_DeleteLocalProfileWhenVHDShouldApply = "Disable"
 							$FSLogixAS_DiffDiskParentFolderPath             = "%TEMP"
 							$FSLogixAS_FlipFlopProfileDirectoryName         = "Disable"
@@ -6461,7 +6461,7 @@ Function OutputSite
 							$FSLogixAS_OutlookCachedMode                    = "Disable"
 							$FSLogixAS_PreventLoginWithFailure              = "Disable"
 							$FSLogixAS_PreventLoginWithTempProfile          = "Disable"
-							$FSLogixAS_ProfileDirSDDL                       = ""
+							$FSLogixAS_ProfileDirSDDL                       = "None"
 							$FSLogixAS_ProfileType                          = "Normal profile"
 							$FSLogixAS_ReAttachIntervalSeconds              = 10
 							$FSLogixAS_ReAttachRetryCount                   = 60
@@ -6470,7 +6470,7 @@ Function OutputSite
 							$FSLogixAS_SetTempToLocalPath                   = "Redirect TEMP, TMP, and INetCache"
 							$FSLogixAS_SIDDirNameMatch                      = "%sid%_%username%"
 							$FSLogixAS_SIDDirNamePattern                    = "%sid%_%username%"
-							$FSLogixAS_SIDDirSDDL                           = ""
+							$FSLogixAS_SIDDirSDDL                           = "None"
 							$FSLogixAS_VHDNameMatch                         = "Profile*"
 							$FSLogixAS_VHDNamePattern                       = "Profile_%username%"
 							$FSLogixAS_VHDXSectorSize                       = "System default"
@@ -7139,24 +7139,35 @@ Function OutputSite
 					$ScriptInformation.Add(@{Data = "     Default size"; Value = "$FSLogixDefaultSize GB"; }) > $Null
 					$ScriptInformation.Add(@{Data = "Additional settings"; Value = ""; }) > $Null
 					$ScriptInformation.Add(@{Data = "     Users and Groups"; Value = ""; }) > $Null
-					$cnt = -1
-					ForEach($item in $FSLogixSettingsUserInclusionList)
+					If($FSLogixSettingsUserInclusionList.Count -eq 0)
 					{
-						$cnt++
-						
-						If($cnt -eq 0)
+						$ScriptInformation.Add(@{Data = "          User Inclusion List"; Value = "None"; }) > $Null
+					}
+					Else
+					{
+						$cnt = -1
+						ForEach($item in $FSLogixSettingsUserInclusionList)
 						{
-							$ScriptInformation.Add(@{Data = "          User Inclusion List"; Value = "$($item.Account)  Type: $($item.Type)"; }) > $Null
-						}
-						Else
-						{
-							$ScriptInformation.Add(@{Data = ""; Value = "$($item.Account)  Type: $($item.Type)"; }) > $Null
+							$cnt++
+							
+							If($cnt -eq 0)
+							{
+								$ScriptInformation.Add(@{Data = "          User Inclusion List"; Value = "User: $($item.Account)"; }) > $Null
+								$ScriptInformation.Add(@{Data = ""; Value = "Type: $($item.Type)"; }) > $Null
+								$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+							}
+							Else
+							{
+								$ScriptInformation.Add(@{Data = ""; Value = "User: $($item.Account)"; }) > $Null
+								$ScriptInformation.Add(@{Data = ""; Value = "Type: $($item.Type)"; }) > $Null
+								$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+							}
 						}
 					}
 
 					If($FSLogixSettingsUserExclusionList.Count -eq 0)
 					{
-						$ScriptInformation.Add(@{Data = "          User Exclusion List"; Value = ""; }) > $Null
+						$ScriptInformation.Add(@{Data = "          User Exclusion List"; Value = "None"; }) > $Null
 					}
 					Else
 					{
@@ -7167,11 +7178,16 @@ Function OutputSite
 							
 							If($cnt -eq 0)
 							{
-								$ScriptInformation.Add(@{Data = "          User Exclusion List"; Value = "$($item.Account)  Type: $($item.Type)"; }) > $Null
+								#$ScriptInformation.Add(@{Data = "          User Exclusion List"; Value = "User: $($item.Account)  Type: $($item.Type)"; }) > $Null
+								$ScriptInformation.Add(@{Data = "          User Exclusion List"; Value = "User: $($item.Account)"; }) > $Null
+								$ScriptInformation.Add(@{Data = ""; Value = "Type: $($item.Type)"; }) > $Null
+								$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
 							}
 							Else
 							{
-								$ScriptInformation.Add(@{Data = ""; Value = "$($item.Account)  Type: $($item.Type)"; }) > $Null
+								$ScriptInformation.Add(@{Data = ""; Value = "User: $($item.Account)"; }) > $Null
+								$ScriptInformation.Add(@{Data = ""; Value = "Type: $($item.Type)"; }) > $Null
+								$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
 							}
 						}
 					}
@@ -7188,7 +7204,7 @@ Function OutputSite
 								
 								If($cnt -eq 0)
 								{
-									$ScriptInformation.Add(@{Data = "          Exclude Common Folders"; Value = $item; }) > $Null
+									$ScriptInformation.Add(@{Data = "               Exclude Common Folders"; Value = $item; }) > $Null
 								}
 								Else
 								{
@@ -7198,48 +7214,62 @@ Function OutputSite
 						}
 						Else
 						{
-							$ScriptInformation.Add(@{Data = "          Exclude Common Folders"; Value = "None"; }) > $Null
+							$ScriptInformation.Add(@{Data = "               Exclude Common Folders"; Value = "None"; }) > $Null
 						}
 					}
 					
-					$ScriptInformation.Add(@{Data = "          Folder Inclusion List"; Value = ""; }) > $Null
-					$cnt = -1
-					ForEach($item in $FSLogixSettingsFolderInclusionList)
+					If($FSLogixSettingsFolderInclusionList.Count -eq 0)
 					{
-						$cnt++
-						
-						If($cnt -eq 0)
+						$ScriptInformation.Add(@{Data = "          Folder Inclusion List"; Value = "None"; }) > $Null
+					}
+					Else
+					{
+						$ScriptInformation.Add(@{Data = "          Folder Inclusion List"; Value = ""; }) > $Null
+						$cnt = -1
+						ForEach($item in $FSLogixSettingsFolderInclusionList)
 						{
-							$ScriptInformation.Add(@{Data = "               Folder"; Value = "$item"; }) > $Null
-						}
-						Else
-						{
-							$ScriptInformation.Add(@{Data = ""; Value = "$item"; }) > $Null
+							$cnt++
+							
+							If($cnt -eq 0)
+							{
+								$ScriptInformation.Add(@{Data = "               Folder"; Value = "$item"; }) > $Null
+							}
+							Else
+							{
+								$ScriptInformation.Add(@{Data = ""; Value = "$item"; }) > $Null
+							}
 						}
 					}
 
-					$ScriptInformation.Add(@{Data = "          Folder Exclusion List"; Value = ""; }) > $Null
-					$cnt = -1
-					ForEach($item in $FSLogixSettingsFolderExclusionList)
+					If($FSLogixSettingsFolderExclusionList.Count -eq 0)
 					{
-						$cnt++
-						
-						Switch($item.ExcludeFolderCopy)
+						$ScriptInformation.Add(@{Data = "          Folder Exclusion List"; Value = "None"; }) > $Null
+					}
+					Else
+					{
+						$ScriptInformation.Add(@{Data = "          Folder Exclusion List"; Value = ""; }) > $Null
+						$cnt = -1
+						ForEach($item in $FSLogixSettingsFolderExclusionList)
 						{
-							"None"					{$CopyBase = "No "; $CopyBack = "No "; Break}
-							"CopyBack"				{$CopyBase = "No "; $CopyBack = "Yes"; Break}
-							"CopyBase"				{$CopyBase = "Yes"; $CopyBack = "No "; Break}
-							"CopyBase, CopyBack"	{$CopyBase = "Yes"; $CopyBack = "Yes"; Break}
-							Default					{$CopyBase = "Unknown"; $CopyBack = "Unknown"; Break}
-						}
-						
-						If($cnt -eq 0)
-						{
-							$ScriptInformation.Add(@{Data = "               Folder"; Value = "$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack"; }) > $Null
-						}
-						Else
-						{
-							$ScriptInformation.Add(@{Data = ""; Value = "$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack"; }) > $Null
+							$cnt++
+							
+							Switch($item.ExcludeFolderCopy)
+							{
+								"None"					{$CopyBase = "No "; $CopyBack = "No "; Break}
+								"CopyBack"				{$CopyBase = "No "; $CopyBack = "Yes"; Break}
+								"CopyBase"				{$CopyBase = "Yes"; $CopyBack = "No "; Break}
+								"CopyBase, CopyBack"	{$CopyBase = "Yes"; $CopyBack = "Yes"; Break}
+								Default					{$CopyBase = "Unknown"; $CopyBack = "Unknown"; Break}
+							}
+							
+							If($cnt -eq 0)
+							{
+								$ScriptInformation.Add(@{Data = "               Folder"; Value = "$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack"; }) > $Null
+							}
+							Else
+							{
+								$ScriptInformation.Add(@{Data = ""; Value = "$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack"; }) > $Null
+							}
 						}
 					}
 					
@@ -7379,24 +7409,31 @@ Function OutputSite
 					Line 5 "Default size`t`t`t`t`t: " "$FSLogixDefaultSize GB"
 					Line 4 "Additional settings"
 					Line 5 "Users and Groups"
-					$cnt = -1
-					ForEach($item in $FSLogixSettingsUserInclusionList)
+					If($FSLogixSettingsUserInclusionList.Count -eq 0)
 					{
-						$cnt++
-						
-						If($cnt -eq 0)
+						Line 6 "User Inclusion List`t`t`t: " "None"
+					}
+					Else
+					{
+						$cnt = -1
+						ForEach($item in $FSLogixSettingsUserInclusionList)
 						{
-							Line 6 "User Inclusion List`t`t`t: " "$($item.Account)  Type: $($item.Type)"
-						}
-						Else
-						{
-							Line 11 "  " "$($item.Account)  Type: $($item.Type)"
+							$cnt++
+							
+							If($cnt -eq 0)
+							{
+								Line 6 "User Inclusion List`t`t`t: " "User: $($item.Account)  Type: $($item.Type)"
+							}
+							Else
+							{
+								Line 11 "  " "User: $($item.Account)  Type: $($item.Type)"
+							}
 						}
 					}
 
 					If($FSLogixSettingsUserExclusionList.Count -eq 0)
 					{
-						Line 6 "User Exclusion List`t`t`t: "
+						Line 6 "User Exclusion List`t`t`t: " "None"
 					}
 					Else
 					{
@@ -7407,11 +7444,11 @@ Function OutputSite
 							
 							If($cnt -eq 0)
 							{
-								Line 6 "User Exclusion List`t`t`t: " "$($item.Account)  Type: $($item.Type)"
+								Line 6 "User Exclusion List`t`t`t: " "User: $($item.Account)  Type: $($item.Type)"
 							}
 							Else
 							{
-								Line 11 "  " "$($item.Account)  Type: $($item.Type)"
+								Line 11 "  " "User: $($item.Account)  Type: $($item.Type)"
 							}
 						}
 					}
@@ -7428,7 +7465,7 @@ Function OutputSite
 								
 								If($cnt -eq 0)
 								{
-									Line 6 "Exclude Common Folders`t`t`t: " $item
+									Line 7 "Exclude Common Folders`t`t: " $item
 								}
 								Else
 								{
@@ -7438,47 +7475,62 @@ Function OutputSite
 						}
 						Else
 						{
-							Line 6 "Exclude Common Folders`t`t`t: None"
+							Line 7 "Exclude Common Folders`t`t: None"
 						}
 					}
-					Line 6 "Folder Inclusion List"
-					$cnt = -1
-					ForEach($item in $FSLogixSettingsFolderInclusionList)
+					
+					If($FSLogixSettingsFolderInclusionList.Count -eq 0)
 					{
-						$cnt++
-						
-						If($cnt -eq 0)
+						Line 6 "Folder Inclusion List`t`t`t: " "None"
+					}
+					Else
+					{
+						Line 6 "Folder Inclusion List"
+						$cnt = -1
+						ForEach($item in $FSLogixSettingsFolderInclusionList)
 						{
-							Line 7 "Folder`t`t`t`t: " $item
-						}
-						Else
-						{
-							Line 11 "  " $item
+							$cnt++
+							
+							If($cnt -eq 0)
+							{
+								Line 7 "Folder`t`t`t`t: " $item
+							}
+							Else
+							{
+								Line 11 "  " $item
+							}
 						}
 					}
 
-					Line 6 "Folder Exclusion List"
-					$cnt = -1
-					ForEach($item in $FSLogixSettingsFolderExclusionList)
+					If($FSLogixSettingsFolderExclusionList.Count -eq 0)
 					{
-						$cnt++
-						
-						Switch($item.ExcludeFolderCopy)
+						Line 6 "Folder Exclusion List`t`t`t: " "None"
+					}
+					Else
+					{
+						Line 6 "Folder Exclusion List"
+						$cnt = -1
+						ForEach($item in $FSLogixSettingsFolderExclusionList)
 						{
-							"None"					{$CopyBase = "No "; $CopyBack = "No "; Break}
-							"CopyBack"				{$CopyBase = "No "; $CopyBack = "Yes"; Break}
-							"CopyBase"				{$CopyBase = "Yes"; $CopyBack = "No "; Break}
-							"CopyBase, CopyBack"	{$CopyBase = "Yes"; $CopyBack = "Yes"; Break}
-							Default					{$CopyBase = "Unknown"; $CopyBack = "Unknown"; Break}
-						}
-						
-						If($cnt -eq 0)
-						{
-							Line 7 "Folder`t`t`t`t: " "$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack"
-						}
-						Else
-						{
-							Line 11 "  " "$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack"
+							$cnt++
+							
+							Switch($item.ExcludeFolderCopy)
+							{
+								"None"					{$CopyBase = "No "; $CopyBack = "No "; Break}
+								"CopyBack"				{$CopyBase = "No "; $CopyBack = "Yes"; Break}
+								"CopyBase"				{$CopyBase = "Yes"; $CopyBack = "No "; Break}
+								"CopyBase, CopyBack"	{$CopyBase = "Yes"; $CopyBack = "Yes"; Break}
+								Default					{$CopyBase = "Unknown"; $CopyBack = "Unknown"; Break}
+							}
+							
+							If($cnt -eq 0)
+							{
+								Line 7 "Folder`t`t`t`t: " "$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack"
+							}
+							Else
+							{
+								Line 11 "  " "$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack"
+							}
 						}
 					}
 					
@@ -7617,24 +7669,35 @@ Function OutputSite
 					$rowdata += @(,("     Default size",($Script:htmlsb),"$FSLogixDefaultSize GB",$htmlwhite))
 					$rowdata += @(,("Additional settings",($Script:htmlsb),"",$htmlwhite))
 					$rowdata += @(,("     Users and Groups",($Script:htmlsb),"",$htmlwhite))
-					$cnt = -1
-					ForEach($item in $FSLogixSettingsUserInclusionList)
+					If($FSLogixSettingsUserInclusionList.Count -eq 0)
 					{
-						$cnt++
-						
-						If($cnt -eq 0)
+						$rowdata += @(,("          User Inclusion List",($Script:htmlsb),"None",$htmlwhite))
+					}
+					Else
+					{
+						$cnt = -1
+						ForEach($item in $FSLogixSettingsUserInclusionList)
 						{
-							$rowdata += @(,("          User Inclusion List",($Script:htmlsb),"$($item.Account)  Type: $($item.Type)",$htmlwhite))
-						}
-						Else
-						{
-							$rowdata += @(,("",($Script:htmlsb),"$($item.Account)  Type: $($item.Type)",$htmlwhite))
+							$cnt++
+							
+							If($cnt -eq 0)
+							{
+								$rowdata += @(,("          User Inclusion List",($Script:htmlsb),"User: $($item.Account)",$htmlwhite))
+								$rowdata += @(,("",($Script:htmlsb),"Type: $($item.Type)",$htmlwhite))
+								$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
+							}
+							Else
+							{
+								$rowdata += @(,("",($Script:htmlsb),"User: $($item.Account)",$htmlwhite))
+								$rowdata += @(,("",($Script:htmlsb),"Type: $($item.Type)",$htmlwhite))
+								$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
+							}
 						}
 					}
 
 					If($FSLogixSettingsUserExclusionList.Count -eq 0)
 					{
-						$rowdata += @(,("          User Exclusion List",($Script:htmlsb),"",$htmlwhite))
+						$rowdata += @(,("          User Exclusion List",($Script:htmlsb),"None",$htmlwhite))
 					}
 					Else
 					{
@@ -7645,11 +7708,16 @@ Function OutputSite
 							
 							If($cnt -eq 0)
 							{
-								$rowdata += @(,("          User Exclusion List",($Script:htmlsb),"$($item.Account)  Type: $($item.Type)",$htmlwhite))
+								#$rowdata += @(,("          User Exclusion List",($Script:htmlsb),"User: $($item.Account)  Type: $($item.Type)",$htmlwhite))
+								$rowdata += @(,("          User Exclusion List",($Script:htmlsb),"User: $($item.Account)",$htmlwhite))
+								$rowdata += @(,("",($Script:htmlsb),"Type: $($item.Type)",$htmlwhite))
+								$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
 							}
 							Else
 							{
-								$rowdata += @(,("",($Script:htmlsb),"$($item.Account)  Type: $($item.Type)",$htmlwhite))
+								$rowdata += @(,("",($Script:htmlsb),"User: $($item.Account)",$htmlwhite))
+								$rowdata += @(,("",($Script:htmlsb),"Type: $($item.Type)",$htmlwhite))
+								$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
 							}
 						}
 					}
@@ -7666,7 +7734,7 @@ Function OutputSite
 								
 								If($cnt -eq 0)
 								{
-									$rowdata += @(,("          Exclude Common Folders",($Script:htmlsb),$item,$htmlwhite))
+									$rowdata += @(,("               Exclude Common Folders",($Script:htmlsb),$item,$htmlwhite))
 								}
 								Else
 								{
@@ -7676,47 +7744,62 @@ Function OutputSite
 						}
 						Else
 						{
-							$rowdata += @(,("          Exclude Common Folders",($Script:htmlsb),"None",$htmlwhite))
-						}
-					}
-					$rowdata += @(,("          Folder Inclusion List",($Script:htmlsb),"",$htmlwhite))
-					$cnt = -1
-					ForEach($item in $FSLogixSettingsFolderInclusionList)
-					{
-						$cnt++
-						
-						If($cnt -eq 0)
-						{
-							$rowdata += @(,("               Folder",($Script:htmlsb),"$item",$htmlwhite))
-						}
-						Else
-						{
-							$rowdata += @(,("",($Script:htmlsb),"$item",$htmlwhite))
+							$rowdata += @(,("               Exclude Common Folders",($Script:htmlsb),"None",$htmlwhite))
 						}
 					}
 
-					$rowdata += @(,("          Folder Exclusion List",($Script:htmlsb),"",$htmlwhite))
-					$cnt = -1
-					ForEach($item in $FSLogixSettingsFolderExclusionList)
+					If($FSLogixSettingsFolderInclusionList.Count -eq 0)
 					{
-						$cnt++
-						
-						Switch($item.ExcludeFolderCopy)
+						$rowdata += @(,("          Folder Inclusion List",($Script:htmlsb),"None",$htmlwhite))
+					}
+					Else
+					{
+						$rowdata += @(,("          Folder Inclusion List",($Script:htmlsb),"",$htmlwhite))
+						$cnt = -1
+						ForEach($item in $FSLogixSettingsFolderInclusionList)
 						{
-							"None"					{$CopyBase = "No "; $CopyBack = "No "; Break}
-							"CopyBack"				{$CopyBase = "No "; $CopyBack = "Yes"; Break}
-							"CopyBase"				{$CopyBase = "Yes"; $CopyBack = "No "; Break}
-							"CopyBase, CopyBack"	{$CopyBase = "Yes"; $CopyBack = "Yes"; Break}
-							Default					{$CopyBase = "Unknown"; $CopyBack = "Unknown"; Break}
+							$cnt++
+							
+							If($cnt -eq 0)
+							{
+								$rowdata += @(,("               Folder",($Script:htmlsb),"$item",$htmlwhite))
+							}
+							Else
+							{
+								$rowdata += @(,("",($Script:htmlsb),"$item",$htmlwhite))
+							}
 						}
-						
-						If($cnt -eq 0)
+					}
+
+					If($FSLogixSettingsFolderExclusionList.Count -eq 0)
+					{
+						$rowdata += @(,("          Folder Exclusion List",($Script:htmlsb),"None",$htmlwhite))
+					}
+					Else
+					{
+						$rowdata += @(,("          Folder Exclusion List",($Script:htmlsb),"",$htmlwhite))
+						$cnt = -1
+						ForEach($item in $FSLogixSettingsFolderExclusionList)
 						{
-							$rowdata += @(,("               Folder",($Script:htmlsb),"$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack",$htmlwhite))
-						}
-						Else
-						{
-							$rowdata += @(,("",($Script:htmlsb),"$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack",$htmlwhite))
+							$cnt++
+							
+							Switch($item.ExcludeFolderCopy)
+							{
+								"None"					{$CopyBase = "No "; $CopyBack = "No "; Break}
+								"CopyBack"				{$CopyBase = "No "; $CopyBack = "Yes"; Break}
+								"CopyBase"				{$CopyBase = "Yes"; $CopyBack = "No "; Break}
+								"CopyBase, CopyBack"	{$CopyBase = "Yes"; $CopyBack = "Yes"; Break}
+								Default					{$CopyBase = "Unknown"; $CopyBack = "Unknown"; Break}
+							}
+							
+							If($cnt -eq 0)
+							{
+								$rowdata += @(,("               Folder",($Script:htmlsb),"$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack",$htmlwhite))
+							}
+							Else
+							{
+								$rowdata += @(,("",($Script:htmlsb),"$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack",$htmlwhite))
+							}
 						}
 					}
 
@@ -8226,9 +8309,9 @@ Function OutputSite
 				$ScriptInformation.Add(@{Data = "Description"; Value = $RDSGroup.Description; }) > $Null
 				$ScriptInformation.Add(@{Data = "RD session hosts based on a template"; Value = $RDSGroup.UseRASTemplate; }) > $Null
 				$ScriptInformation.Add(@{Data = "RAS template"; Value = $RDSGroup.RASTemplateId; }) > $Null
-				$ScriptInformation.Add(@{Data = "Group Members"; Value = ""; }) > $Null
 				If($RDSGroupMembers.Count -gt 0)
 				{
+					$ScriptInformation.Add(@{Data = "Group Members"; Value = ""; }) > $Null
 					$cnt=-1
 					ForEach($RDSGroupMember in $RDSGroupMembers)
 					{
@@ -8245,7 +8328,7 @@ Function OutputSite
 				}
 				Else
 				{
-					$ScriptInformation.Add(@{Data = "No Group Members Found"; Value = ""; }) > $Null
+					$ScriptInformation.Add(@{Data = "Group Members"; Value = "No Group Members Found"; }) > $Null
 				}
 
 				$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -8273,9 +8356,9 @@ Function OutputSite
 				Line 3 "Description`t`t`t`t: " $RDSGroup.Description
 				Line 3 "RD session hosts based on a template`t: " $RDSGroup.UseRASTemplate
 				Line 3 "RAS template`t`t`t`t: " $RDSGroup.RASTemplateId
-				Line 3 "Group Members" ""
 				If($RDSGroupMembers.Count -gt 0)
 				{
+					Line 3 "Group Members" ""
 					$cnt=-1
 					ForEach($RDSGroupMember in $RDSGroupMembers)
 					{
@@ -8292,7 +8375,7 @@ Function OutputSite
 				}
 				Else
 				{
-					Line 4 "No Group Members Found" ""
+					Line 3 "Group Members`t`t: " "No Group Members Found"
 				}
 				Line 0 ""
 			}
@@ -8304,9 +8387,9 @@ Function OutputSite
 				$rowdata += @(,("Description",($Script:htmlsb),$RDSGroup.Description,$htmlwhite))
 				$rowdata += @(,("RD session hosts based on a template",($Script:htmlsb),$RDSGroup.UseRASTemplate.ToString(),$htmlwhite))
 				$rowdata += @(,("RAS template",($Script:htmlsb),$RDSGroup.RASTemplateId.ToString(),$htmlwhite))
-				$rowdata += @(,("Group Members",($Script:htmlsb),"",$htmlwhite))
 				If($RDSGroupMembers.Count -gt 0)
 				{
+					$rowdata += @(,("Group Members",($Script:htmlsb),"",$htmlwhite))
 					$cnt=-1
 					ForEach($RDSGroupMember in $RDSGroupMembers)
 					{
@@ -8323,7 +8406,7 @@ Function OutputSite
 				}
 				Else
 				{
-					$rowdata += @(,("No Group Members Found",($Script:htmlsb),"",$htmlwhite))
+					$rowdata += @(,("Group Members",($Script:htmlsb),"No Group Members Found",$htmlwhite))
 				}
 
 				$msg = "General"
@@ -8560,7 +8643,7 @@ Function OutputSite
 				Line 3 "Publishing Session Disconnect Timeout`t`t`t: " $RDSPublishingSessionDisconnectTimeout
 				Line 3 "Publishing Session Reset Timeout`t`t`t: " $RDSPublishingSessionResetTime
 				Line 3 "Allow Client URL/Mail Redirection`t`t`t: " $RDSAllowClientURLMailRedirection
-				Line 3 "Support Windows Shell URL namespace objects`t`t`t: " $RDSSupportShellURLNamespaceObject
+				Line 3 "Support Windows Shell URL namespace objects`t`t: " $RDSSupportShellURLNamespaceObject
 				Line 3 "Drag and drop`t`t`t`t`t`t: " $RDSDragAndDrop
 				Line 3 "Preferred Publishing Agent`t`t`t`t: " $RDSPreferredPublishingAgent
 				Line 3 "Allow 2xRemoteExec to send command to the client`t: " $RDSAllowRemoteExec
@@ -8903,7 +8986,7 @@ Function OutputSite
 				{
 					#unable to retrieve default, use built-in default values
 					$RDSUPDState                                    = "Do not change"
-					$RDSUPDLocation                                 = ""
+					$RDSUPDLocation                                 = "None"
 					$RDSUPDSize                                     = "20"
 					$RDSTechnology                                  = "Do not manage by RAS"
 					$RDSUPDRoamingMode                              = "Exclude"
@@ -8911,25 +8994,25 @@ Function OutputSite
 					$RDSUPDExcludeFolderPath                        = @()
 					$RDSUPDIncludeFilePath                          = @()
 					$RDSUPDIncludeFolderPath                        = @()
-					$FSLogixDeploymentSettingsDeploymentMethod      = ""
-					$FSLogixDeploymentSettingsInstallOnlineURL      = ""
-					$FSLogixDeploymentSettingsNetworkDrivePath      = ""
-					$FSLogixDeploymentSettingsInstallerFileName     = ""
+					$FSLogixDeploymentSettingsDeploymentMethod      = "None"
+					$FSLogixDeploymentSettingsInstallOnlineURL      = "None"
+					$FSLogixDeploymentSettingsNetworkDrivePath      = "None"
+					$FSLogixDeploymentSettingsInstallerFileName     = "None"
 					$FSLogixDeploymentSettingsReplicate             = $False
-					$FSLogixLocationType                            = ""
+					$FSLogixLocationType                            = "None"
 					$FSLogixLocationOfProfileDisks                  = @()
-					$FSLogixProfileDiskFormat                       = ""
-					$FSLogixAllocationType                          = ""
+					$FSLogixProfileDiskFormat                       = "None"
+					$FSLogixAllocationType                          = "None"
 					$FSLogixDefaultSize                             = "0"
 					$FSLogixSettingsUserInclusionList               = @("Everyone")
 					$FSLogixSettingsUserExclusionList               = @()
 					$FSLogixSettingsCustomizeProfileFolders         = $False
-					$FSLogixSettingsExcludeCommonFolders            = ""
+					$FSLogixSettingsExcludeCommonFolders            = "None"
 					$ExcludedCommonFolders                          = @()
 					$FSLogixSettingsFolderInclusionList             = @()
 					$FSLogixSettingsFolderExclusionList             = @()
 					$FSLogixAS_AccessNetworkAsComputerObject        = "Disable"
-					$FSLogixAS_AttachVHDSDDL                        = ""
+					$FSLogixAS_AttachVHDSDDL                        = "None"
 					$FSLogixAS_DeleteLocalProfileWhenVHDShouldApply = "Disable"
 					$FSLogixAS_DiffDiskParentFolderPath             = "%TEMP"
 					$FSLogixAS_FlipFlopProfileDirectoryName         = "Disable"
@@ -8940,7 +9023,7 @@ Function OutputSite
 					$FSLogixAS_OutlookCachedMode                    = "Disable"
 					$FSLogixAS_PreventLoginWithFailure              = "Disable"
 					$FSLogixAS_PreventLoginWithTempProfile          = "Disable"
-					$FSLogixAS_ProfileDirSDDL                       = ""
+					$FSLogixAS_ProfileDirSDDL                       = "None"
 					$FSLogixAS_ProfileType                          = "Normal profile"
 					$FSLogixAS_ReAttachIntervalSeconds              = 10
 					$FSLogixAS_ReAttachRetryCount                   = 60
@@ -8949,7 +9032,7 @@ Function OutputSite
 					$FSLogixAS_SetTempToLocalPath                   = "Redirect TEMP, TMP, and INetCache"
 					$FSLogixAS_SIDDirNameMatch                      = "%sid%_%username%"
 					$FSLogixAS_SIDDirNamePattern                    = "%sid%_%username%"
-					$FSLogixAS_SIDDirSDDL                           = ""
+					$FSLogixAS_SIDDirSDDL                           = "None"
 					$FSLogixAS_VHDNameMatch                         = "Profile*"
 					$FSLogixAS_VHDNamePattern                       = "Profile_%username%"
 					$FSLogixAS_VHDXSectorSize                       = "System default"
@@ -9339,24 +9422,36 @@ Function OutputSite
 					$ScriptInformation.Add(@{Data = "     Default size"; Value = "$FSLogixDefaultSize GB"; }) > $Null
 					$ScriptInformation.Add(@{Data = "Additional settings"; Value = ""; }) > $Null
 					$ScriptInformation.Add(@{Data = "     Users and Groups"; Value = ""; }) > $Null
-					$cnt = -1
-					ForEach($item in $FSLogixSettingsUserInclusionList)
+					
+					If($FSLogixSettingsUserInclusionList.Count -eq 0)
 					{
-						$cnt++
-						
-						If($cnt -eq 0)
+						$ScriptInformation.Add(@{Data = "          User Inclusion List"; Value = "None"; }) > $Null
+					}
+					Else
+					{
+						$cnt = -1
+						ForEach($item in $FSLogixSettingsUserInclusionList)
 						{
-							$ScriptInformation.Add(@{Data = "          User Inclusion List"; Value = "$($item.Account)  Type: $($item.Type)"; }) > $Null
-						}
-						Else
-						{
-							$ScriptInformation.Add(@{Data = ""; Value = "$($item.Account)  Type: $($item.Type)"; }) > $Null
+							$cnt++
+							
+							If($cnt -eq 0)
+							{
+								$ScriptInformation.Add(@{Data = "          User Inclusion List"; Value = "User: $($item.Account)"; }) > $Null
+								$ScriptInformation.Add(@{Data = ""; Value = "Type: $($item.Type)"; }) > $Null
+								$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+							}
+							Else
+							{
+								$ScriptInformation.Add(@{Data = ""; Value = "User: $($item.Account)"; }) > $Null
+								$ScriptInformation.Add(@{Data = ""; Value = "Type: $($item.Type)"; }) > $Null
+								$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+							}
 						}
 					}
 
 					If($FSLogixSettingsUserExclusionList.Count -eq 0)
 					{
-						$ScriptInformation.Add(@{Data = "          User Exclusion List"; Value = ""; }) > $Null
+						$ScriptInformation.Add(@{Data = "          User Exclusion List"; Value = "None"; }) > $Null
 					}
 					Else
 					{
@@ -9367,11 +9462,15 @@ Function OutputSite
 							
 							If($cnt -eq 0)
 							{
-								$ScriptInformation.Add(@{Data = "          User Exclusion List"; Value = "$($item.Account)  Type: $($item.Type)"; }) > $Null
+								$ScriptInformation.Add(@{Data = "          User Exclusion List"; Value = "User: $($item.Account)"; }) > $Null
+								$ScriptInformation.Add(@{Data = ""; Value = "Type: $($item.Type)"; }) > $Null
+								$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
 							}
 							Else
 							{
-								$ScriptInformation.Add(@{Data = ""; Value = "$($item.Account)  Type: $($item.Type)"; }) > $Null
+								$ScriptInformation.Add(@{Data = ""; Value = "User: $($item.Account)"; }) > $Null
+								$ScriptInformation.Add(@{Data = ""; Value = "Type: $($item.Type)"; }) > $Null
+								$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
 							}
 						}
 					}
@@ -9388,7 +9487,7 @@ Function OutputSite
 								
 								If($cnt -eq 0)
 								{
-									$ScriptInformation.Add(@{Data = "          Exclude Common Folders"; Value = $item; }) > $Null
+									$ScriptInformation.Add(@{Data = "               Exclude Common Folders"; Value = $item; }) > $Null
 								}
 								Else
 								{
@@ -9398,47 +9497,62 @@ Function OutputSite
 						}
 						Else
 						{
-							$ScriptInformation.Add(@{Data = "          Exclude Common Folders"; Value = "None"; }) > $Null
+							$ScriptInformation.Add(@{Data = "               Exclude Common Folders"; Value = "None"; }) > $Null
 						}
 					}
-					$ScriptInformation.Add(@{Data = "          Folder Inclusion List"; Value = ""; }) > $Null
-					$cnt = -1
-					ForEach($item in $FSLogixSettingsFolderInclusionList)
+					
+					If($FSLogixSettingsFolderInclusionList.Count -eq 0)
 					{
-						$cnt++
-						
-						If($cnt -eq 0)
+						$ScriptInformation.Add(@{Data = "          Folder Inclusion List"; Value = "None"; }) > $Null
+					}
+					Else
+					{
+						$ScriptInformation.Add(@{Data = "          Folder Inclusion List"; Value = ""; }) > $Null
+						$cnt = -1
+						ForEach($item in $FSLogixSettingsFolderInclusionList)
 						{
-							$ScriptInformation.Add(@{Data = "               Folder"; Value = "$item"; }) > $Null
-						}
-						Else
-						{
-							$ScriptInformation.Add(@{Data = ""; Value = "$item"; }) > $Null
+							$cnt++
+							
+							If($cnt -eq 0)
+							{
+								$ScriptInformation.Add(@{Data = "               Folder"; Value = "$item"; }) > $Null
+							}
+							Else
+							{
+								$ScriptInformation.Add(@{Data = ""; Value = "$item"; }) > $Null
+							}
 						}
 					}
 
-					$ScriptInformation.Add(@{Data = "          Folder Exclusion List"; Value = ""; }) > $Null
-					$cnt = -1
-					ForEach($item in $FSLogixSettingsFolderExclusionList)
+					If($FSLogixSettingsFolderExclusionList.Count -eq 0)
 					{
-						$cnt++
-						
-						Switch($item.ExcludeFolderCopy)
+						$ScriptInformation.Add(@{Data = "          Folder Exclusion List"; Value = "None"; }) > $Null
+					}
+					Else
+					{
+						$ScriptInformation.Add(@{Data = "          Folder Exclusion List"; Value = ""; }) > $Null
+						$cnt = -1
+						ForEach($item in $FSLogixSettingsFolderExclusionList)
 						{
-							"None"					{$CopyBase = "No "; $CopyBack = "No "; Break}
-							"CopyBack"				{$CopyBase = "No "; $CopyBack = "Yes"; Break}
-							"CopyBase"				{$CopyBase = "Yes"; $CopyBack = "No "; Break}
-							"CopyBase, CopyBack"	{$CopyBase = "Yes"; $CopyBack = "Yes"; Break}
-							Default					{$CopyBase = "Unknown"; $CopyBack = "Unknown"; Break}
-						}
-						
-						If($cnt -eq 0)
-						{
-							$ScriptInformation.Add(@{Data = "               Folder"; Value = "$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack"; }) > $Null
-						}
-						Else
-						{
-							$ScriptInformation.Add(@{Data = ""; Value = "$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack"; }) > $Null
+							$cnt++
+							
+							Switch($item.ExcludeFolderCopy)
+							{
+								"None"					{$CopyBase = "No "; $CopyBack = "No "; Break}
+								"CopyBack"				{$CopyBase = "No "; $CopyBack = "Yes"; Break}
+								"CopyBase"				{$CopyBase = "Yes"; $CopyBack = "No "; Break}
+								"CopyBase, CopyBack"	{$CopyBase = "Yes"; $CopyBack = "Yes"; Break}
+								Default					{$CopyBase = "Unknown"; $CopyBack = "Unknown"; Break}
+							}
+							
+							If($cnt -eq 0)
+							{
+								$ScriptInformation.Add(@{Data = "               Folder"; Value = "$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack"; }) > $Null
+							}
+							Else
+							{
+								$ScriptInformation.Add(@{Data = ""; Value = "$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack"; }) > $Null
+							}
 						}
 					}
 					
@@ -9578,24 +9692,32 @@ Function OutputSite
 					Line 4 "Default size`t`t`t`t`t: " "$FSLogixDefaultSize GB"
 					Line 3 "Additional settings"
 					Line 4 "Users and Groups"
-					$cnt = -1
-					ForEach($item in $FSLogixSettingsUserInclusionList)
+					
+					If($FSLogixSettingsUserInclusionList.Count -eq 0)
 					{
-						$cnt++
-						
-						If($cnt -eq 0)
+						Line 5 "User Inclusion List`t`t`t: " "None"
+					}
+					Else
+					{
+						$cnt = -1
+						ForEach($item in $FSLogixSettingsUserInclusionList)
 						{
-							Line 5 "User Inclusion List`t`t`t: " "$($item.Account)  Type: $($item.Type)"
-						}
-						Else
-						{
-							Line 10 "  " "$($item.Account)  Type: $($item.Type)"
+							$cnt++
+							
+							If($cnt -eq 0)
+							{
+								Line 5 "User Inclusion List`t`t`t: " "User: $($item.Account)  Type: $($item.Type)"
+							}
+							Else
+							{
+								Line 10 "  " "User: $($item.Account)  Type: $($item.Type)"
+							}
 						}
 					}
 
 					If($FSLogixSettingsUserExclusionList.Count -eq 0)
 					{
-						Line 5 "User Exclusion List`t`t`t: "
+						Line 5 "User Exclusion List`t`t`t: " "None"
 					}
 					Else
 					{
@@ -9606,11 +9728,11 @@ Function OutputSite
 							
 							If($cnt -eq 0)
 							{
-								Line 5 "User Exclusion List`t`t`t: " "$($item.Account)  Type: $($item.Type)"
+								Line 5 "User Exclusion List`t`t`t: " "User: $($item.Account)  Type: $($item.Type)"
 							}
 							Else
 							{
-								Line 10 "  " "$($item.Account)  Type: $($item.Type)"
+								Line 10 "  " "User: $($item.Account)  Type: $($item.Type)"
 							}
 						}
 					}
@@ -9627,7 +9749,7 @@ Function OutputSite
 								
 								If($cnt -eq 0)
 								{
-									Line 5 "Exclude Common Folders`t`t`t: " $item
+									Line 6 "Exclude Common Folders`t`t: " $item
 								}
 								Else
 								{
@@ -9637,47 +9759,62 @@ Function OutputSite
 						}
 						Else
 						{
-							Line 5 "Exclude Common Folders`t`t`t: None"
+							Line 6 "Exclude Common Folders`t`t: None"
 						}
 					}
-					Line 5 "Folder Inclusion List"
-					$cnt = -1
-					ForEach($item in $FSLogixSettingsFolderInclusionList)
+					
+					If($FSLogixSettingsFolderInclusionList.Count -eq 0)
 					{
-						$cnt++
-						
-						If($cnt -eq 0)
+						Line 5 "Folder Inclusion List`t`t`t: " "None"
+					}
+					Else
+					{
+						Line 5 "Folder Inclusion List"
+						$cnt = -1
+						ForEach($item in $FSLogixSettingsFolderInclusionList)
 						{
-							Line 6 "Folder`t`t`t`t: " $item
-						}
-						Else
-						{
-							Line 10 "  " $item
+							$cnt++
+							
+							If($cnt -eq 0)
+							{
+								Line 6 "Folder`t`t`t`t: " $item
+							}
+							Else
+							{
+								Line 10 "  " $item
+							}
 						}
 					}
 
-					Line 5 "Folder Exclusion List"
-					$cnt = -1
-					ForEach($item in $FSLogixSettingsFolderExclusionList)
+					If($FSLogixSettingsFolderExclusionList.Count -eq 0)
 					{
-						$cnt++
-						
-						Switch($item.ExcludeFolderCopy)
+						Line 5 "Folder Exclusion List`t`t`t: " "None"
+					}
+					Else
+					{
+						Line 5 "Folder Exclusion List"
+						$cnt = -1
+						ForEach($item in $FSLogixSettingsFolderExclusionList)
 						{
-							"None"					{$CopyBase = "No "; $CopyBack = "No "; Break}
-							"CopyBack"				{$CopyBase = "No "; $CopyBack = "Yes"; Break}
-							"CopyBase"				{$CopyBase = "Yes"; $CopyBack = "No "; Break}
-							"CopyBase, CopyBack"	{$CopyBase = "Yes"; $CopyBack = "Yes"; Break}
-							Default					{$CopyBase = "Unknown"; $CopyBack = "Unknown"; Break}
-						}
-						
-						If($cnt -eq 0)
-						{
-							Line 6 "Folder`t`t`t`t: " "$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack"
-						}
-						Else
-						{
-							Line 10 "  " "$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack"
+							$cnt++
+							
+							Switch($item.ExcludeFolderCopy)
+							{
+								"None"					{$CopyBase = "No "; $CopyBack = "No "; Break}
+								"CopyBack"				{$CopyBase = "No "; $CopyBack = "Yes"; Break}
+								"CopyBase"				{$CopyBase = "Yes"; $CopyBack = "No "; Break}
+								"CopyBase, CopyBack"	{$CopyBase = "Yes"; $CopyBack = "Yes"; Break}
+								Default					{$CopyBase = "Unknown"; $CopyBack = "Unknown"; Break}
+							}
+							
+							If($cnt -eq 0)
+							{
+								Line 6 "Folder`t`t`t`t: " "$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack"
+							}
+							Else
+							{
+								Line 10 "  " "$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack"
+							}
 						}
 					}
 					
@@ -9685,32 +9822,32 @@ Function OutputSite
 					Line 5 "FSLogix Setting                                      Value"
 					Line 5 "======================================================================================"
 					#      "Swap SID and username in profile directory names     Redirect TEMP, TMP, and INetCache"
-					Line 6 "Access network as computer object                    $($FSLogixAS_AccessNetworkAsComputerObject)"
-					Line 6 "Custom SDDL for profile directory                    $($FSLogixAS_ProfileDirSDDL)"
-					Line 6 "Delay between locked VHD(X) retries                  $($FSLogixAS_LockedRetryInterval)"
-					Line 6 "Delete local profile when loading from VHD           $($FSLogixAS_DeleteLocalProfileWhenVHDShouldApply)"
-					Line 6 "Diff disk parent folder path                         $($FSLogixAS_DiffDiskParentFolderPath)"
-					Line 6 "Do not create a folder for new profiles              $($FSLogixAS_NoProfileContainingFolder)"
-					Line 6 "Enable Cached mode for Outlook                       $($FSLogixAS_OutlookCachedMode)"
-					Line 6 "Keep local profiles                                  $($FSLogixAS_KeepLocalDir)"
-					Line 6 "Naming pattern for new VHD(X) files                  $($FSLogixAS_VHDNamePattern)"
-					Line 6 "Number of locked VHD(X) retries                      $($FSLogixAS_LockedRetryCount)"
-					Line 6 "Prevent logons with failures                         $($FSLogixAS_PreventLoginWithFailure)"
-					Line 6 "Prevent logons with temp profiles                    $($FSLogixAS_PreventLoginWithTempProfile)"
-					Line 6 "Profile folder naming pattern                        $($FSLogixAS_SIDDirNameMatch)"
-					Line 6 "Profile type                                         $($FSLogixAS_ProfileType)"
-					Line 6 "Profile VHD(X) file matching pattern                 $($FSLogixAS_VHDNameMatch)"
-					Line 6 "Re-attach interval                                   $($FSLogixAS_ReAttachIntervalSeconds)"
-					Line 6 "Re-attach retry limit                                $($FSLogixAS_ReAttachRetryCount)"
-					Line 6 "Remove duplicate OST files on logoff                 $($FSLogixAS_RemoveOrphanedOSTFilesOnLogoff)"
-					Line 6 "SDDL used when attaching the VHD                     $($FSLogixAS_AttachVHDSDDL)"
-					Line 6 "Search roaming feature mode                          $($FSLogixAS_RoamSearch)"
-					Line 6 "Swap SID and username in profile directory names     $($FSLogixAS_FlipFlopProfileDirectoryName)"
-					Line 6 "Temporary folders redirection mode                   $($FSLogixAS_SetTempToLocalPath)"
-					Line 6 "Use SDDL on creation of SID containing folder        $($FSLogixAS_SIDDirSDDL)"
-					Line 6 "User-to-Profile matching pattern                     $($FSLogixAS_SIDDirNamePattern)"
-					Line 6 "VHDX sector size                                     $($FSLogixAS_VHDXSectorSize)"
-					Line 6 "Volume wait time                                     $($FSLogixAS_VolumeWaitTimeMS)"
+					Line 5 "Access network as computer object                    $($FSLogixAS_AccessNetworkAsComputerObject)"
+					Line 5 "Custom SDDL for profile directory                    $($FSLogixAS_ProfileDirSDDL)"
+					Line 5 "Delay between locked VHD(X) retries                  $($FSLogixAS_LockedRetryInterval)"
+					Line 5 "Delete local profile when loading from VHD           $($FSLogixAS_DeleteLocalProfileWhenVHDShouldApply)"
+					Line 5 "Diff disk parent folder path                         $($FSLogixAS_DiffDiskParentFolderPath)"
+					Line 5 "Do not create a folder for new profiles              $($FSLogixAS_NoProfileContainingFolder)"
+					Line 5 "Enable Cached mode for Outlook                       $($FSLogixAS_OutlookCachedMode)"
+					Line 5 "Keep local profiles                                  $($FSLogixAS_KeepLocalDir)"
+					Line 5 "Naming pattern for new VHD(X) files                  $($FSLogixAS_VHDNamePattern)"
+					Line 5 "Number of locked VHD(X) retries                      $($FSLogixAS_LockedRetryCount)"
+					Line 5 "Prevent logons with failures                         $($FSLogixAS_PreventLoginWithFailure)"
+					Line 5 "Prevent logons with temp profiles                    $($FSLogixAS_PreventLoginWithTempProfile)"
+					Line 5 "Profile folder naming pattern                        $($FSLogixAS_SIDDirNameMatch)"
+					Line 5 "Profile type                                         $($FSLogixAS_ProfileType)"
+					Line 5 "Profile VHD(X) file matching pattern                 $($FSLogixAS_VHDNameMatch)"
+					Line 5 "Re-attach interval                                   $($FSLogixAS_ReAttachIntervalSeconds)"
+					Line 5 "Re-attach retry limit                                $($FSLogixAS_ReAttachRetryCount)"
+					Line 5 "Remove duplicate OST files on logoff                 $($FSLogixAS_RemoveOrphanedOSTFilesOnLogoff)"
+					Line 5 "SDDL used when attaching the VHD                     $($FSLogixAS_AttachVHDSDDL)"
+					Line 5 "Search roaming feature mode                          $($FSLogixAS_RoamSearch)"
+					Line 5 "Swap SID and username in profile directory names     $($FSLogixAS_FlipFlopProfileDirectoryName)"
+					Line 5 "Temporary folders redirection mode                   $($FSLogixAS_SetTempToLocalPath)"
+					Line 5 "Use SDDL on creation of SID containing folder        $($FSLogixAS_SIDDirSDDL)"
+					Line 5 "User-to-Profile matching pattern                     $($FSLogixAS_SIDDirNamePattern)"
+					Line 5 "VHDX sector size                                     $($FSLogixAS_VHDXSectorSize)"
+					Line 5 "Volume wait time                                     $($FSLogixAS_VolumeWaitTimeMS)"
 				}
 
 				Line 0 ""
@@ -9816,24 +9953,36 @@ Function OutputSite
 					$rowdata += @(,("     Default size",($Script:htmlsb),"$FSLogixDefaultSize GB",$htmlwhite))
 					$rowdata += @(,("Additional settings",($Script:htmlsb),"",$htmlwhite))
 					$rowdata += @(,("     Users and Groups",($Script:htmlsb),"",$htmlwhite))
-					$cnt = -1
-					ForEach($item in $FSLogixSettingsUserInclusionList)
+					
+					If($FSLogixSettingsUserInclusionList.COunt -eq 0)
 					{
-						$cnt++
-						
-						If($cnt -eq 0)
+						$rowdata += @(,("          User Inclusion List",($Script:htmlsb),"None",$htmlwhite))
+					}
+					Else
+					{
+						$cnt = -1
+						ForEach($item in $FSLogixSettingsUserInclusionList)
 						{
-							$rowdata += @(,("          User Inclusion List",($Script:htmlsb),"$($item.Account)  Type: $($item.Type)",$htmlwhite))
-						}
-						Else
-						{
-							$rowdata += @(,("",($Script:htmlsb),"$($item.Account)  Type: $($item.Type)",$htmlwhite))
+							$cnt++
+							
+							If($cnt -eq 0)
+							{
+								$rowdata += @(,("          User Inclusion List",($Script:htmlsb),"User: $($item.Account)",$htmlwhite))
+								$rowdata += @(,("",($Script:htmlsb),"Type: $($item.Type)",$htmlwhite))
+								$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
+							}
+							Else
+							{
+								$rowdata += @(,("",($Script:htmlsb),"User: $($item.Account)",$htmlwhite))
+								$rowdata += @(,("",($Script:htmlsb),"Type: $($item.Type)",$htmlwhite))
+								$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
+							}
 						}
 					}
 
 					If($FSLogixSettingsUserExclusionList.Count -eq 0)
 					{
-						$rowdata += @(,("          User Exclusion List",($Script:htmlsb),"",$htmlwhite))
+						$rowdata += @(,("          User Exclusion List",($Script:htmlsb),"None",$htmlwhite))
 					}
 					Else
 					{
@@ -9844,11 +9993,15 @@ Function OutputSite
 							
 							If($cnt -eq 0)
 							{
-								$rowdata += @(,("          User Exclusion List",($Script:htmlsb),"$($item.Account)  Type: $($item.Type)",$htmlwhite))
+								$rowdata += @(,("          User Exclusion List",($Script:htmlsb),"User: $($item.Account)",$htmlwhite))
+								$rowdata += @(,("",($Script:htmlsb),"Type: $($item.Type)",$htmlwhite))
+								$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
 							}
 							Else
 							{
-								$rowdata += @(,("",($Script:htmlsb),"$($item.Account)  Type: $($item.Type)",$htmlwhite))
+								$rowdata += @(,("",($Script:htmlsb),"User: $($item.Account)",$htmlwhite))
+								$rowdata += @(,("",($Script:htmlsb),"Type: $($item.Type)",$htmlwhite))
+								$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
 							}
 						}
 					}
@@ -9865,7 +10018,7 @@ Function OutputSite
 								
 								If($cnt -eq 0)
 								{
-									$rowdata += @(,("          Exclude Common Folders",($Script:htmlsb),$item,$htmlwhite))
+									$rowdata += @(,("               Exclude Common Folders",($Script:htmlsb),$item,$htmlwhite))
 								}
 								Else
 								{
@@ -9875,47 +10028,62 @@ Function OutputSite
 						}
 						Else
 						{
-							$rowdata += @(,("          Exclude Common Folders",($Script:htmlsb),"None",$htmlwhite))
-						}
-					}
-					$rowdata += @(,("          Folder Inclusion List",($Script:htmlsb),"",$htmlwhite))
-					$cnt = -1
-					ForEach($item in $FSLogixSettingsFolderInclusionList)
-					{
-						$cnt++
-						
-						If($cnt -eq 0)
-						{
-							$rowdata += @(,("               Folder",($Script:htmlsb),"$item",$htmlwhite))
-						}
-						Else
-						{
-							$rowdata += @(,("",($Script:htmlsb),"$item",$htmlwhite))
+							$rowdata += @(,("               Exclude Common Folders",($Script:htmlsb),"None",$htmlwhite))
 						}
 					}
 
-					$rowdata += @(,("          Folder Exclusion List",($Script:htmlsb),"",$htmlwhite))
-					$cnt = -1
-					ForEach($item in $FSLogixSettingsFolderExclusionList)
+					If($FSLogixSettingsFolderInclusionList.Count -eq 0)
 					{
-						$cnt++
-						
-						Switch($item.ExcludeFolderCopy)
+						$rowdata += @(,("          Folder Inclusion List",($Script:htmlsb),"None",$htmlwhite))
+					}
+					Else
+					{
+						$rowdata += @(,("          Folder Inclusion List",($Script:htmlsb),"",$htmlwhite))
+						$cnt = -1
+						ForEach($item in $FSLogixSettingsFolderInclusionList)
 						{
-							"None"					{$CopyBase = "No "; $CopyBack = "No "; Break}
-							"CopyBack"				{$CopyBase = "No "; $CopyBack = "Yes"; Break}
-							"CopyBase"				{$CopyBase = "Yes"; $CopyBack = "No "; Break}
-							"CopyBase, CopyBack"	{$CopyBase = "Yes"; $CopyBack = "Yes"; Break}
-							Default					{$CopyBase = "Unknown"; $CopyBack = "Unknown"; Break}
+							$cnt++
+							
+							If($cnt -eq 0)
+							{
+								$rowdata += @(,("               Folder",($Script:htmlsb),"$item",$htmlwhite))
+							}
+							Else
+							{
+								$rowdata += @(,("",($Script:htmlsb),"$item",$htmlwhite))
+							}
 						}
-						
-						If($cnt -eq 0)
+					}
+
+					If($FSLogixSettingsFolderExclusionList.Count -eq 0)
+					{
+						$rowdata += @(,("          Folder Exclusion List",($Script:htmlsb),"None",$htmlwhite))
+					}
+					Else
+					{
+						$rowdata += @(,("          Folder Exclusion List",($Script:htmlsb),"",$htmlwhite))
+						$cnt = -1
+						ForEach($item in $FSLogixSettingsFolderExclusionList)
 						{
-							$rowdata += @(,("               Folder",($Script:htmlsb),"$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack",$htmlwhite))
-						}
-						Else
-						{
-							$rowdata += @(,("",($Script:htmlsb),"$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack",$htmlwhite))
+							$cnt++
+							
+							Switch($item.ExcludeFolderCopy)
+							{
+								"None"					{$CopyBase = "No "; $CopyBack = "No "; Break}
+								"CopyBack"				{$CopyBase = "No "; $CopyBack = "Yes"; Break}
+								"CopyBase"				{$CopyBase = "Yes"; $CopyBack = "No "; Break}
+								"CopyBase, CopyBack"	{$CopyBase = "Yes"; $CopyBack = "Yes"; Break}
+								Default					{$CopyBase = "Unknown"; $CopyBack = "Unknown"; Break}
+							}
+							
+							If($cnt -eq 0)
+							{
+								$rowdata += @(,("               Folder",($Script:htmlsb),"$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack",$htmlwhite))
+							}
+							Else
+							{
+								$rowdata += @(,("",($Script:htmlsb),"$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack",$htmlwhite))
+							}
 						}
 					}
 
@@ -11129,14 +11297,14 @@ Function OutputSite
 				Line 4 "Type`t`t`t`t: " $VDIType
 				If($VDIType -eq "Azure")
 				{
-					Line 4 "Name: " $VDIHost.Server
-					Line 4 "Description: " $VDIHost.Description
-					Line 4 "Subscription details: " $VDIHost.
+					Line 4 "Name`t`t`t`t: " $VDIHost.Server
+					Line 4 "Description`t`t`t: " $VDIHost.Description
+					Line 4 "Subscription details`t`t: " 
 					Line 5 "Authentication URL: " $VDIHost.AzureInfo.AuthenticationURL
-					Line 5 "Management URL: " $VDIHost.AzureInfo.ManagementURL
-					Line 5 "Resource URI: " $VDIHost.AzureInfo.ResourceURI
-					Line 4 "Tenant ID: " $VDIHost.AzureInfo.TenantID
-					Line 4 "Subscription ID: " $VDIHost.AzureInfo.SubscriptionID
+					Line 5 "Management URL`t  : " $VDIHost.AzureInfo.ManagementURL
+					Line 5 "Resource URI`t  : " $VDIHost.AzureInfo.ResourceURI
+					Line 4 "Tenant ID`t`t`t: " $VDIHost.AzureInfo.TenantID
+					Line 4 "Subscription ID`t`t`t: " $VDIHost.AzureInfo.SubscriptionID
 				}
 				Else
 				{
@@ -11337,7 +11505,7 @@ Function OutputSite
 			If($Text)
 			{
 				Line 4 "Allow Client URL/Mail Redirection`t`t`t: " $VDIHost.AllowURLAndMailRedirection.ToString()
-				Line 4 "Support Windows Shell URL namespace objects`t`t`t: " $VDIHost.SupportShellURLNamespaceObjects.ToString()
+				Line 4 "Support Windows Shell URL namespace objects`t`t: " $VDIHost.SupportShellURLNamespaceObjects.ToString()
 				#Line 4 "Drag and drop`t`t`t`t`t`t: " $VDIHostDragAndDrop
 				Line 4 "Preferred Publishing Agent`t`t`t`t: " $VDIHostStatus.PreferredPA
 				Line 4 "Allow file transfer command (HTML5 and Chrome clients)`t: " $VDIHost.AllowFileTransfer.ToString()
@@ -12268,25 +12436,25 @@ Function OutputSite
 					{
 						#unable to retrieve default, use built-in default values
 						$TemplateTechnology                             = "Do not manage by RAS"
-						$FSLogixDeploymentSettingsDeploymentMethod      = ""
-						$FSLogixDeploymentSettingsInstallOnlineURL      = ""
-						$FSLogixDeploymentSettingsNetworkDrivePath      = ""
-						$FSLogixDeploymentSettingsInstallerFileName     = ""
+						$FSLogixDeploymentSettingsDeploymentMethod      = "None"
+						$FSLogixDeploymentSettingsInstallOnlineURL      = "None"
+						$FSLogixDeploymentSettingsNetworkDrivePath      = "None"
+						$FSLogixDeploymentSettingsInstallerFileName     = "None"
 						$FSLogixDeploymentSettingsReplicate             = $False
-						$FSLogixLocationType                            = ""
+						$FSLogixLocationType                            = "None"
 						$FSLogixLocationOfProfileDisks                  = @()
-						$FSLogixProfileDiskFormat                       = ""
-						$FSLogixAllocationType                          = ""
+						$FSLogixProfileDiskFormat                       = "None"
+						$FSLogixAllocationType                          = "None"
 						$FSLogixDefaultSize                             = "0"
 						$FSLogixSettingsUserInclusionList               = @("Everyone")
 						$FSLogixSettingsUserExclusionList               = @()
 						$FSLogixSettingsCustomizeProfileFolders         = $False
-						$FSLogixSettingsExcludeCommonFolders            = ""
+						$FSLogixSettingsExcludeCommonFolders            = "None"
 						$ExcludedCommonFolders                          = @()
 						$FSLogixSettingsFolderInclusionList             = @()
 						$FSLogixSettingsFolderExclusionList             = @()
 						$FSLogixAS_AccessNetworkAsComputerObject        = "Disable"
-						$FSLogixAS_AttachVHDSDDL                        = ""
+						$FSLogixAS_AttachVHDSDDL                        = "None"
 						$FSLogixAS_DeleteLocalProfileWhenVHDShouldApply = "Disable"
 						$FSLogixAS_DiffDiskParentFolderPath             = "%TEMP"
 						$FSLogixAS_FlipFlopProfileDirectoryName         = "Disable"
@@ -12297,7 +12465,7 @@ Function OutputSite
 						$FSLogixAS_OutlookCachedMode                    = "Disable"
 						$FSLogixAS_PreventLoginWithFailure              = "Disable"
 						$FSLogixAS_PreventLoginWithTempProfile          = "Disable"
-						$FSLogixAS_ProfileDirSDDL                       = ""
+						$FSLogixAS_ProfileDirSDDL                       = "None"
 						$FSLogixAS_ProfileType                          = "Normal profile"
 						$FSLogixAS_ReAttachIntervalSeconds              = 10
 						$FSLogixAS_ReAttachRetryCount                   = 60
@@ -12306,7 +12474,7 @@ Function OutputSite
 						$FSLogixAS_SetTempToLocalPath                   = "Redirect TEMP, TMP, and INetCache"
 						$FSLogixAS_SIDDirNameMatch                      = "%sid%_%username%"
 						$FSLogixAS_SIDDirNamePattern                    = "%sid%_%username%"
-						$FSLogixAS_SIDDirSDDL                           = ""
+						$FSLogixAS_SIDDirSDDL                           = "None"
 						$FSLogixAS_VHDNameMatch                         = "Profile*"
 						$FSLogixAS_VHDNamePattern                       = "Profile_%username%"
 						$FSLogixAS_VHDXSectorSize                       = "System default"
@@ -12605,18 +12773,30 @@ Function OutputSite
 						$ScriptInformation.Add(@{Data = "     Default size"; Value = "$FSLogixDefaultSize GB"; }) > $Null
 						$ScriptInformation.Add(@{Data = "Additional settings"; Value = ""; }) > $Null
 						$ScriptInformation.Add(@{Data = "     Users and Groups"; Value = ""; }) > $Null
-						$cnt = -1
-						ForEach($item in $FSLogixSettingsUserInclusionList)
+						
+						If($FSLogixSettingsUserInclusionList.Count -eq 0)
 						{
-							$cnt++
-							
-							If($cnt -eq 0)
+							$ScriptInformation.Add(@{Data = "          User Inclusion List"; Value = "None"; }) > $Null
+						}
+						Else
+						{
+							$cnt = -1
+							ForEach($item in $FSLogixSettingsUserInclusionList)
 							{
-								$ScriptInformation.Add(@{Data = "          User Inclusion List"; Value = "$($item.Account)  Type: $($item.Type)"; }) > $Null
-							}
-							Else
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = "$($item.Account)  Type: $($item.Type)"; }) > $Null
+								$cnt++
+								
+								If($cnt -eq 0)
+								{
+									$ScriptInformation.Add(@{Data = "          User Inclusion List"; Value = "User: $($item.Account)"; }) > $Null
+									$ScriptInformation.Add(@{Data = ""; Value = "Type: $($item.Type)"; }) > $Null
+									$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+								}
+								Else
+								{
+									$ScriptInformation.Add(@{Data = ""; Value = "User: $($item.Account)"; }) > $Null
+									$ScriptInformation.Add(@{Data = ""; Value = "Type: $($item.Type)"; }) > $Null
+									$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+								}
 							}
 						}
 
@@ -12633,11 +12813,16 @@ Function OutputSite
 								
 								If($cnt -eq 0)
 								{
-									$ScriptInformation.Add(@{Data = "          User Exclusion List"; Value = "$($item.Account)  Type: $($item.Type)"; }) > $Null
+									#$ScriptInformation.Add(@{Data = "          User Exclusion List"; Value = "User: $($item.Account)  Type: $($item.Type)"; }) > $Null
+									$ScriptInformation.Add(@{Data = "          User Exclusion List"; Value = "User: $($item.Account)"; }) > $Null
+									$ScriptInformation.Add(@{Data = ""; Value = "Type: $($item.Type)"; }) > $Null
+									$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
 								}
 								Else
 								{
-									$ScriptInformation.Add(@{Data = ""; Value = "$($item.Account)  Type: $($item.Type)"; }) > $Null
+									$ScriptInformation.Add(@{Data = ""; Value = "User: $($item.Account)"; }) > $Null
+									$ScriptInformation.Add(@{Data = ""; Value = "Type: $($item.Type)"; }) > $Null
+									$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
 								}
 							}
 						}
@@ -12654,7 +12839,7 @@ Function OutputSite
 									
 									If($cnt -eq 0)
 									{
-										$ScriptInformation.Add(@{Data = "          Exclude Common Folders"; Value = $item; }) > $Null
+										$ScriptInformation.Add(@{Data = "               Exclude Common Folders"; Value = $item; }) > $Null
 									}
 									Else
 									{
@@ -12664,47 +12849,62 @@ Function OutputSite
 							}
 							Else
 							{
-								$ScriptInformation.Add(@{Data = "          Exclude Common Folders"; Value = "None"; }) > $Null
-							}
-						}
-						$ScriptInformation.Add(@{Data = "          Folder Inclusion List"; Value = ""; }) > $Null
-						$cnt = -1
-						ForEach($item in $FSLogixSettingsFolderInclusionList)
-						{
-							$cnt++
-							
-							If($cnt -eq 0)
-							{
-								$ScriptInformation.Add(@{Data = "               Folder"; Value = "$item"; }) > $Null
-							}
-							Else
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = "$item"; }) > $Null
+								$ScriptInformation.Add(@{Data = "               Exclude Common Folders"; Value = "None"; }) > $Null
 							}
 						}
 
-						$ScriptInformation.Add(@{Data = "          Folder Exclusion List"; Value = ""; }) > $Null
-						$cnt = -1
-						ForEach($item in $FSLogixSettingsFolderExclusionList)
+						If($FSLogixSettingsFolderInclusionList.Count -eq 0)
 						{
-							$cnt++
-							
-							Switch($item.ExcludeFolderCopy)
+							$ScriptInformation.Add(@{Data = "          Folder Inclusion List"; Value = "None"; }) > $Null
+						}
+						Else
+						{
+							$ScriptInformation.Add(@{Data = "          Folder Inclusion List"; Value = ""; }) > $Null
+							$cnt = -1
+							ForEach($item in $FSLogixSettingsFolderInclusionList)
 							{
-								"None"					{$CopyBase = "No "; $CopyBack = "No "; Break}
-								"CopyBack"				{$CopyBase = "No "; $CopyBack = "Yes"; Break}
-								"CopyBase"				{$CopyBase = "Yes"; $CopyBack = "No "; Break}
-								"CopyBase, CopyBack"	{$CopyBase = "Yes"; $CopyBack = "Yes"; Break}
-								Default					{$CopyBase = "Unknown"; $CopyBack = "Unknown"; Break}
+								$cnt++
+								
+								If($cnt -eq 0)
+								{
+									$ScriptInformation.Add(@{Data = "               Folder"; Value = "$item"; }) > $Null
+								}
+								Else
+								{
+									$ScriptInformation.Add(@{Data = ""; Value = "$item"; }) > $Null
+								}
 							}
-							
-							If($cnt -eq 0)
+						}
+
+						If($FSLogixSettingsFolderExclusionList.Count -eq 0)
+						{
+							$ScriptInformation.Add(@{Data = "          Folder Exclusion List"; Value = "None"; }) > $Null
+						}
+						Else
+						{
+							$ScriptInformation.Add(@{Data = "          Folder Exclusion List"; Value = ""; }) > $Null
+							$cnt = -1
+							ForEach($item in $FSLogixSettingsFolderExclusionList)
 							{
-								$ScriptInformation.Add(@{Data = "               Folder"; Value = "$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack"; }) > $Null
-							}
-							Else
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = "$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack"; }) > $Null
+								$cnt++
+								
+								Switch($item.ExcludeFolderCopy)
+								{
+									"None"					{$CopyBase = "No "; $CopyBack = "No "; Break}
+									"CopyBack"				{$CopyBase = "No "; $CopyBack = "Yes"; Break}
+									"CopyBase"				{$CopyBase = "Yes"; $CopyBack = "No "; Break}
+									"CopyBase, CopyBack"	{$CopyBase = "Yes"; $CopyBack = "Yes"; Break}
+									Default					{$CopyBase = "Unknown"; $CopyBack = "Unknown"; Break}
+								}
+								
+								If($cnt -eq 0)
+								{
+									$ScriptInformation.Add(@{Data = "               Folder"; Value = "$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack"; }) > $Null
+								}
+								Else
+								{
+									$ScriptInformation.Add(@{Data = ""; Value = "$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack"; }) > $Null
+								}
 							}
 						}
 						
@@ -12803,24 +13003,32 @@ Function OutputSite
 						Line 4 "Default size`t`t`t`t`t: " "$FSLogixDefaultSize GB"
 						Line 3 "Additional settings"
 						Line 4 "Users and Groups"
-						$cnt = -1
-						ForEach($item in $FSLogixSettingsUserInclusionList)
+						
+						If($FSLogixSettingsUserInclusionList.Count -eq 0)
 						{
-							$cnt++
-							
-							If($cnt -eq 0)
+							Line 5 "User Inclusion List`t`t`t: " "None"
+						}
+						Else
+						{
+							$cnt = -1
+							ForEach($item in $FSLogixSettingsUserInclusionList)
 							{
-								Line 5 "User Inclusion List`t`t`t: " "$($item.Account)  Type: $($item.Type)"
-							}
-							Else
-							{
-								Line 10 "  " "$($item.Account)  Type: $($item.Type)"
+								$cnt++
+								
+								If($cnt -eq 0)
+								{
+									Line 5 "User Inclusion List`t`t`t: " "User: $($item.Account)  Type: $($item.Type)"
+								}
+								Else
+								{
+									Line 10 "  " "User: $($item.Account)  Type: $($item.Type)"
+								}
 							}
 						}
 
 						If($FSLogixSettingsUserExclusionList.Count -eq 0)
 						{
-							Line 5 "User Exclusion List`t`t`t: "
+							Line 5 "User Exclusion List`t`t`t: " "None"
 						}
 						Else
 						{
@@ -12831,11 +13039,11 @@ Function OutputSite
 								
 								If($cnt -eq 0)
 								{
-									Line 5 "User Exclusion List`t`t`t: " "$($item.Account)  Type: $($item.Type)"
+									Line 5 "User Exclusion List`t`t`t: " "User: $($item.Account)  Type: $($item.Type)"
 								}
 								Else
 								{
-									Line 10 "  " "$($item.Account)  Type: $($item.Type)"
+									Line 10 "  " "User: $($item.Account)  Type: $($item.Type)"
 								}
 							}
 						}
@@ -12852,7 +13060,7 @@ Function OutputSite
 									
 									If($cnt -eq 0)
 									{
-										Line 5 "Exclude Common Folders`t`t`t: " $item
+										Line 6 "Exclude Common Folders`t`t: " $item
 									}
 									Else
 									{
@@ -12862,47 +13070,62 @@ Function OutputSite
 							}
 							Else
 							{
-								Line 5 "Exclude Common Folders`t`t`t: None"
-							}
-						}
-						Line 5 "Folder Inclusion List"
-						$cnt = -1
-						ForEach($item in $FSLogixSettingsFolderInclusionList)
-						{
-							$cnt++
-							
-							If($cnt -eq 0)
-							{
-								Line 6 "Folder`t`t`t`t: " $item
-							}
-							Else
-							{
-								Line 10 "  " $item
+								Line 6 "Exclude Common Folders`t`t: None"
 							}
 						}
 
-						Line 5 "Folder Exclusion List"
-						$cnt = -1
-						ForEach($item in $FSLogixSettingsFolderExclusionList)
+						If($FSLogixSettingsFolderInclusionList.Count -eq 0)
 						{
-							$cnt++
-							
-							Switch($item.ExcludeFolderCopy)
+							Line 5 "Folder Inclusion List`t`t`t: " "None"
+						}
+						Else
+						{
+							Line 5 "Folder Inclusion List"
+							$cnt = -1
+							ForEach($item in $FSLogixSettingsFolderInclusionList)
 							{
-								"None"					{$CopyBase = "No "; $CopyBack = "No "; Break}
-								"CopyBack"				{$CopyBase = "No "; $CopyBack = "Yes"; Break}
-								"CopyBase"				{$CopyBase = "Yes"; $CopyBack = "No "; Break}
-								"CopyBase, CopyBack"	{$CopyBase = "Yes"; $CopyBack = "Yes"; Break}
-								Default					{$CopyBase = "Unknown"; $CopyBack = "Unknown"; Break}
+								$cnt++
+								
+								If($cnt -eq 0)
+								{
+									Line 6 "Folder`t`t`t`t: " $item
+								}
+								Else
+								{
+									Line 10 "  " $item
+								}
 							}
-							
-							If($cnt -eq 0)
+						}
+
+						If($FSLogixSettingsFolderExclusionList.Count -eq 0)
+						{
+							Line 5 "Folder Exclusion List`t`t`t: " "None"
+						}
+						Else
+						{
+							Line 5 "Folder Exclusion List"
+							$cnt = -1
+							ForEach($item in $FSLogixSettingsFolderExclusionList)
 							{
-								Line 6 "Folder`t`t`t`t: " "$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack"
-							}
-							Else
-							{
-								Line 10 "  " "$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack"
+								$cnt++
+								
+								Switch($item.ExcludeFolderCopy)
+								{
+									"None"					{$CopyBase = "No "; $CopyBack = "No "; Break}
+									"CopyBack"				{$CopyBase = "No "; $CopyBack = "Yes"; Break}
+									"CopyBase"				{$CopyBase = "Yes"; $CopyBack = "No "; Break}
+									"CopyBase, CopyBack"	{$CopyBase = "Yes"; $CopyBack = "Yes"; Break}
+									Default					{$CopyBase = "Unknown"; $CopyBack = "Unknown"; Break}
+								}
+								
+								If($cnt -eq 0)
+								{
+									Line 6 "Folder`t`t`t`t: " "$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack"
+								}
+								Else
+								{
+									Line 10 "  " "$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack"
+								}
 							}
 						}
 						
@@ -12988,24 +13211,36 @@ Function OutputSite
 						$rowdata += @(,("     Default size",($Script:htmlsb),"$FSLogixDefaultSize GB",$htmlwhite))
 						$rowdata += @(,("Additional settings",($Script:htmlsb),"",$htmlwhite))
 						$rowdata += @(,("     Users and Groups",($Script:htmlsb),"",$htmlwhite))
-						$cnt = -1
-						ForEach($item in $FSLogixSettingsUserInclusionList)
+						
+						If($FSLogixSettingsUserInclusionList.Count -eq 0)
 						{
-							$cnt++
-							
-							If($cnt -eq 0)
+							$rowdata += @(,("          User Inclusion List",($Script:htmlsb),"None",$htmlwhite))
+						}
+						Else
+						{
+							$cnt = -1
+							ForEach($item in $FSLogixSettingsUserInclusionList)
 							{
-								$rowdata += @(,("          User Inclusion List",($Script:htmlsb),"$($item.Account)  Type: $($item.Type)",$htmlwhite))
-							}
-							Else
-							{
-								$rowdata += @(,("",($Script:htmlsb),"$($item.Account)  Type: $($item.Type)",$htmlwhite))
+								$cnt++
+								
+								If($cnt -eq 0)
+								{
+									$rowdata += @(,("          User Inclusion List",($Script:htmlsb),"User: $($item.Account)",$htmlwhite))
+									$rowdata += @(,("",($Script:htmlsb),"Type: $($item.Type)",$htmlwhite))
+									$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
+								}
+								Else
+								{
+									$rowdata += @(,("",($Script:htmlsb),"User: $($item.Account)",$htmlwhite))
+									$rowdata += @(,("",($Script:htmlsb),"Type: $($item.Type)",$htmlwhite))
+									$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
+								}
 							}
 						}
 
 						If($FSLogixSettingsUserExclusionList.Count -eq 0)
 						{
-							$rowdata += @(,("          User Exclusion List",($Script:htmlsb),"",$htmlwhite))
+							$rowdata += @(,("          User Exclusion List",($Script:htmlsb),"None",$htmlwhite))
 						}
 						Else
 						{
@@ -13016,11 +13251,15 @@ Function OutputSite
 								
 								If($cnt -eq 0)
 								{
-									$rowdata += @(,("          User Exclusion List",($Script:htmlsb),"$($item.Account)  Type: $($item.Type)",$htmlwhite))
+									$rowdata += @(,("          User Exclusion List",($Script:htmlsb),"User: $($item.Account)",$htmlwhite))
+									$rowdata += @(,("",($Script:htmlsb),"Type: $($item.Type)",$htmlwhite))
+									$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
 								}
 								Else
 								{
-									$rowdata += @(,("",($Script:htmlsb),"$($item.Account)  Type: $($item.Type)",$htmlwhite))
+									$rowdata += @(,("",($Script:htmlsb),"User: $($item.Account)",$htmlwhite))
+									$rowdata += @(,("",($Script:htmlsb),"Type: $($item.Type)",$htmlwhite))
+									$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
 								}
 							}
 						}
@@ -13037,7 +13276,7 @@ Function OutputSite
 									
 									If($cnt -eq 0)
 									{
-										$rowdata += @(,("          Exclude Common Folders",($Script:htmlsb),$item,$htmlwhite))
+										$rowdata += @(,("               Exclude Common Folders",($Script:htmlsb),$item,$htmlwhite))
 									}
 									Else
 									{
@@ -13047,47 +13286,62 @@ Function OutputSite
 							}
 							Else
 							{
-								$rowdata += @(,("          Exclude Common Folders",($Script:htmlsb),"None",$htmlwhite))
-							}
-						}
-						$rowdata += @(,("          Folder Inclusion List",($Script:htmlsb),"",$htmlwhite))
-						$cnt = -1
-						ForEach($item in $FSLogixSettingsFolderInclusionList)
-						{
-							$cnt++
-							
-							If($cnt -eq 0)
-							{
-								$rowdata += @(,("               Folder",($Script:htmlsb),"$item",$htmlwhite))
-							}
-							Else
-							{
-								$rowdata += @(,("",($Script:htmlsb),"$item",$htmlwhite))
+								$rowdata += @(,("               Exclude Common Folders",($Script:htmlsb),"None",$htmlwhite))
 							}
 						}
 
-						$rowdata += @(,("          Folder Exclusion List",($Script:htmlsb),"",$htmlwhite))
-						$cnt = -1
-						ForEach($item in $FSLogixSettingsFolderExclusionList)
+						If($FSLogixSettingsFolderInclusionList.Count -eq 0)
 						{
-							$cnt++
-							
-							Switch($item.ExcludeFolderCopy)
+							$rowdata += @(,("          Folder Inclusion List",($Script:htmlsb),"None",$htmlwhite))
+						}
+						Else
+						{
+							$rowdata += @(,("          Folder Inclusion List",($Script:htmlsb),"",$htmlwhite))
+							$cnt = -1
+							ForEach($item in $FSLogixSettingsFolderInclusionList)
 							{
-								"None"					{$CopyBase = "No "; $CopyBack = "No "; Break}
-								"CopyBack"				{$CopyBase = "No "; $CopyBack = "Yes"; Break}
-								"CopyBase"				{$CopyBase = "Yes"; $CopyBack = "No "; Break}
-								"CopyBase, CopyBack"	{$CopyBase = "Yes"; $CopyBack = "Yes"; Break}
-								Default					{$CopyBase = "Unknown"; $CopyBack = "Unknown"; Break}
+								$cnt++
+								
+								If($cnt -eq 0)
+								{
+									$rowdata += @(,("               Folder",($Script:htmlsb),"$item",$htmlwhite))
+								}
+								Else
+								{
+									$rowdata += @(,("",($Script:htmlsb),"$item",$htmlwhite))
+								}
 							}
-							
-							If($cnt -eq 0)
+						}
+
+						If($FSLogixSettingsFolderExclusionList.Count -eq 0)
+						{
+							$rowdata += @(,("          Folder Exclusion List",($Script:htmlsb),"None",$htmlwhite))
+						}
+						Else
+						{
+							$rowdata += @(,("          Folder Exclusion List",($Script:htmlsb),"",$htmlwhite))
+							$cnt = -1
+							ForEach($item in $FSLogixSettingsFolderExclusionList)
 							{
-								$rowdata += @(,("               Folder",($Script:htmlsb),"$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack",$htmlwhite))
-							}
-							Else
-							{
-								$rowdata += @(,("",($Script:htmlsb),"$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack",$htmlwhite))
+								$cnt++
+								
+								Switch($item.ExcludeFolderCopy)
+								{
+									"None"					{$CopyBase = "No "; $CopyBack = "No "; Break}
+									"CopyBack"				{$CopyBase = "No "; $CopyBack = "Yes"; Break}
+									"CopyBase"				{$CopyBase = "Yes"; $CopyBack = "No "; Break}
+									"CopyBase, CopyBack"	{$CopyBase = "Yes"; $CopyBack = "Yes"; Break}
+									Default					{$CopyBase = "Unknown"; $CopyBack = "Unknown"; Break}
+								}
+								
+								If($cnt -eq 0)
+								{
+									$rowdata += @(,("               Folder",($Script:htmlsb),"$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack",$htmlwhite))
+								}
+								Else
+								{
+									$rowdata += @(,("",($Script:htmlsb),"$($item.Folder) Copy base: $CopyBase Copy back: $CopyBack",$htmlwhite))
+								}
 							}
 						}
 
@@ -15457,7 +15711,7 @@ Function OutputSite
 				$ScriptInformation.Add(@{Data = "Override authentication domain"; Value = $Theme.OverrideAuthenticationDomain.ToString(); }) > $Null
 				If($Theme.OverrideAuthenticationDomain)
 				{
-					$ScriptInformation.Add(@{Data = "Domain"; Value = $Theme.Domain; }) > $Null
+					$ScriptInformation.Add(@{Data = "     Domain"; Value = $Theme.Domain; }) > $Null
 				}
 				$ScriptInformation.Add(@{Data = "Limit access to this theme to members of these AD groups"; Value = $Theme.GroupEnabled.ToString(); }) > $Null
 				If($Theme.GroupEnabled)
@@ -15494,7 +15748,7 @@ Function OutputSite
 				Line 3 "Override authentication domain`t: " $Theme.OverrideAuthenticationDomain.ToString()
 				If($Theme.OverrideAuthenticationDomain)
 				{
-					Line 3 "Domain: " $Theme.Domain
+					Line 6 "Domain  : " $Theme.Domain
 				}
 				Line 3 "Limit access to this theme to "
 				Line 3 "members of these AD groups`t: " $Theme.GroupEnabled.ToString()
@@ -15517,7 +15771,7 @@ Function OutputSite
 				$rowdata += @(,("Override authentication domain",($Script:htmlsb),$Theme.OverrideAuthenticationDomain.ToString(),$htmlwhite))
 				If($Theme.OverrideAuthenticationDomain)
 				{
-					$rowdata += @(,("Domain",($Script:htmlsb),$Theme.Domain,$htmlwhite))
+					$rowdata += @(,("     Domain",($Script:htmlsb),$Theme.Domain,$htmlwhite))
 				}
 				$rowdata += @(,("Limit access to this theme to members of these AD groups",($Script:htmlsb),$Theme.GroupEnabled.ToString(),$htmlwhite))
 				If($Theme.GroupEnabled)
@@ -16167,8 +16421,8 @@ Function OutputSite
 					}
 				}
 				Line 4 "Use Pre Windows 2000 login format`t: " $Theme.HTML5Client.Gateway.Pre2000Cred.ToString()
-				Line 4 "Allow embedding of Parallels HTML5 Client"
-				Line 4 "into other web pages`t`t`t: " $Theme.HTML5Client.Gateway.AllowEmbed.ToString()
+				Line 4 "Allow embedding of Parallels HTML5 "
+				Line 4 "Client into other web pages`t`t: " $Theme.HTML5Client.Gateway.AllowEmbed.ToString()
 				Line 4 "Allow file transfer command`t`t: " $ThemeHTMLFileTransfer
 				Line 4 "Allow clipboard command`t`t`t: " $ThemeHTMLClipboardDirection
 				Line 4 "Allow cross-origin resource sharing`t: " $Theme.HTML5Client.Gateway.AllowCORS.ToString()
@@ -21078,11 +21332,11 @@ Function OutputPublishingSettings
 						$cnt++
 						If($cnt -eq 0 )
 						{
-							Line 8 "Extension:`t" $Item
+							Line 8 "Extension`t: " $Item
 						}
 						Else
 						{
-							Line 10 $Item
+							Line 10 "  " $Item
 						}
 					}
 				}
@@ -30395,7 +30649,9 @@ Function Output2FASetting
 				{
 					ForEach($Item in $RAS2FASettings.ExcludeUserGroupList)
 					{
-						$ScriptInformation.Add(@{Data = ""; Value = "User: $($Item.Account)   Type: $($Item.Type)"; }) > $Null
+						$ScriptInformation.Add(@{Data = ""; Value = "User: $($Item.Account)"; }) > $Null
+						$ScriptInformation.Add(@{Data = ""; Value = "Type: $($Item.Type)"; }) > $Null
+						$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
 					}
 				}
 			}
@@ -30860,7 +31116,9 @@ Function Output2FASetting
 				{
 					ForEach($Item in $RAS2FASettings.ExcludeUserGroupList)
 					{
-						Line 8 "  " "User: $($Item.Account)   Type: $($Item.Type)"
+						Line 8 "  " "User: $($Item.Account)"
+						Line 8 "  " "Type: $($Item.Type)"
+						Line 8 "  "
 					}
 				}
 			}
@@ -31282,7 +31540,9 @@ Function Output2FASetting
 				{
 					ForEach($Item in $RAS2FASettings.ExcludeUserGroupList)
 					{
-						$rowdata += @(,("",($Script:htmlsb),"User: $($Item.Account)   Type: $($Item.Type)",$htmlwhite))
+						$rowdata += @(,("",($Script:htmlsb),"User: $($Item.Account)",$htmlwhite))
+						$rowdata += @(,("",($Script:htmlsb),"Type: $($Item.Type)",$htmlwhite))
+						$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
 					}
 				}
 			}
