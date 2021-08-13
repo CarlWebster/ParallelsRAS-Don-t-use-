@@ -30543,7 +30543,7 @@ Function Output2FASetting
 					"UsersWithSafeNetAcc"						{$DeepNetAuthMode = "Use only for users with a safe account"; Break}
 					Default										{$DeepNetAuthMode = "Deepnet mode not found: $($RAS2FASettings.DeepnetSettings.AuthMode)"; Break}
 				}
-
+				
 				$ScriptInformation.Add(@{Data = "     Connection"; Value = ""; }) > $Null
 				$ScriptInformation.Add(@{Data = "          Type"; Value = $RAS2FASettings.DeepnetSettings.DeepnetType; }) > $Null
 				$ScriptInformation.Add(@{Data = "          Server"; Value = $RAS2FASettings.DeepnetSettings.Server; }) > $Null
@@ -30556,7 +30556,8 @@ Function Output2FASetting
 				$ScriptInformation.Add(@{Data = "     Authentication"; Value = ""; }) > $Null
 				$ScriptInformation.Add(@{Data = "          Mode"; Value = $DeepNetAuthMode; }) > $Null
 				$ScriptInformation.Add(@{Data = "          Token Type"; Value = $RAS2FASettings.DeepnetSettings.TokenType.ToString(); }) > $Null
-				#$ScriptInformation.Add(@{Data = "          Allow Channels"; Value = $RAS2FASettings.DeepnetSettings.; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Allow Channels"; Value = "Email: $($RAS2FASettings.DeepnetSettings.ActivateEmail.ToString())"; }) > $Null
+				$ScriptInformation.Add(@{Data = "                        "; Value = "SMS: $($RAS2FASettings.DeepnetSettings.ActivateSMS.ToString())"; }) > $Null
 			}
 			ElseIf($RAS2FASettings.Provider -eq "SafeNet")
 			{
@@ -30569,7 +30570,7 @@ Function Output2FASetting
 				}
 
 				$ScriptInformation.Add(@{Data = "     Connection"; Value = ""; }) > $Null
-				$ScriptInformation.Add(@{Data = "          OTP Service URL"; Value = $RAS2FASettings.SafeNetSettings.OTPServiceURLe; }) > $Null
+				$ScriptInformation.Add(@{Data = "          OTP Service URL"; Value = $RAS2FASettings.SafeNetSettings.OTPServiceURL; }) > $Null
 				$ScriptInformation.Add(@{Data = "     Authentication"; Value = ""; }) > $Null
 				$ScriptInformation.Add(@{Data = "          Mode"; Value = $SafeNetAuthMode; }) > $Null
 				$ScriptInformation.Add(@{Data = "          TMS Web API URL"; Value = $RAS2FASettings.SafeNetSettings.TMSWebApiURL; }) > $Null
@@ -31044,7 +31045,8 @@ Function Output2FASetting
 				Line 4 "Authentication"
 				Line 5 "          Mode`t`t: " $DeepNetAuthMode
 				Line 5 "          Token Type`t: " $RAS2FASettings.DeepnetSettings.TokenType.ToString()
-				#Line 5 "          Allow Channels: " $RAS2FASettings.DeepnetSettings.
+				Line 5 "          Allow Channels: " "Email: $($RAS2FASettings.DeepnetSettings.ActivateEmail.ToString())"
+				Line 5 "                          " "SMS: $($RAS2FASettings.DeepnetSettings.ActivateSMS.ToString())"
 			}
 			ElseIf($RAS2FASettings.Provider -eq "SafeNet")
 			{
@@ -31057,7 +31059,7 @@ Function Output2FASetting
 				}
 
 				Line 4 "Connection"
-				Line 5 "OTP Service URL : " $RAS2FASettings.OTPServiceURL.DeepnetType
+				Line 5 "OTP Service URL : " $RAS2FASettings.SafeNetSettings.DeepnetType
 				Line 4 "Authentication"
 				Line 5 "Mode`t`t`t: " $SafeNetAuthMode
 				Line 5 "TMS Web API URL`t`t: " $RAS2FASettings.SafeNetSettings.TMSWebApiURL
@@ -31461,7 +31463,8 @@ Function Output2FASetting
 				$rowdata += @(,( "     Authentication",($Script:htmlsb),"",$htmlwhite))
 				$rowdata += @(,( "          Mode",($Script:htmlsb), $DeepNetAuthMode,$htmlwhite))
 				$rowdata += @(,( "          Token Type",($Script:htmlsb), $RAS2FASettings.DeepnetSettings.TokenType.ToString(),$htmlwhite))
-				#$rowdata += @(,( "          Allow Channels",($Script:htmlsb), $RAS2FASettings.DeepnetSettings.,$htmlwhite))
+				$rowdata += @(,( "          Allow Channels",($Script:htmlsb), "Email: $($RAS2FASettings.DeepnetSettings.ActivateEmail.ToString())",$htmlwhite))
+				$rowdata += @(,( "                        ",($Script:htmlsb), "SMS: $($RAS2FASettings.DeepnetSettings.ActivateSMS.ToString())",$htmlwhite))
 			}
 			ElseIf($RAS2FASettings.Provider -eq "SafeNet")
 			{
@@ -31474,7 +31477,7 @@ Function Output2FASetting
 				}
 
 				$rowdata += @(,( "     Connection",($Script:htmlsb),"",$htmlwhite))
-				$rowdata += @(,( "          OTP Service URL",($Script:htmlsb),$RAS2FASettings.OTPServiceURL.DeepnetType,$htmlwhite))
+				$rowdata += @(,( "          OTP Service URL",($Script:htmlsb),$RAS2FASettings.SafeNetSettings.OTPServiceURL,$htmlwhite))
 				$rowdata += @(,( "     Authentication",($Script:htmlsb),"",$htmlwhite))
 				$rowdata += @(,( "          Mode",($Script:htmlsb), $SafeNetAuthMode,$htmlwhite))
 				$rowdata += @(,( "          TMS Web API URL",($Script:htmlsb), $RAS2FASettings.SafeNetSettings.TMSWebApiURL,$htmlwhite))
