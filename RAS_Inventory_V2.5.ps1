@@ -7708,7 +7708,6 @@ Function OutputSite
 							
 							If($cnt -eq 0)
 							{
-								#$rowdata += @(,("          User Exclusion List",($Script:htmlsb),"User: $($item.Account)  Type: $($item.Type)",$htmlwhite))
 								$rowdata += @(,("          User Exclusion List",($Script:htmlsb),"User: $($item.Account)",$htmlwhite))
 								$rowdata += @(,("",($Script:htmlsb),"Type: $($item.Type)",$htmlwhite))
 								$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
@@ -33991,22 +33990,34 @@ Function OutputPoliciesDetails
 				}
 
 				<#$txt = "Session/Experience/Performance/Performance/Show contents of window while dragging"
+				#This property is missing from $Policy.ClientPolicy.Session.Performance
+				PS C:\Webster> $Policy.ClientPolicy.Session.Performance | fl *
+
+				Enabled             : True
+				NetType             : Satellite
+				DesktopBackground   : True
+				FontSmoothing       : True
+				WindowMenuAnimation : True
+				DesktopComposition  : True
+				Themes              : True
+				BitmapCaching       : True
+				MoveSizeFullDrag    : True				
 				If($MSWord -or $PDF)
 				{
 					$SettingsWordTable += @{
 					Text = $txt;
-					Value = $Policy.ClientPolicy.Session.Performance.MoveSizeFullDrag.ToString();
+					Value = $Policy.ClientPolicy.Session.Performance..ToString();
 					}
 				}
 				If($HTML)
 				{
 					$rowdata += @(,(
 					$txt,$htmlbold,
-					$Policy.ClientPolicy.Session.Performance.MoveSizeFullDrag.ToString(),$htmlwhite))
+					$Policy.ClientPolicy.Session.Performance..ToString(),$htmlwhite))
 				}
 				If($Text)
 				{
-					OutputPolicySetting $txt $Policy.ClientPolicy.Session.Performance.MoveSizeFullDrag.ToString()
+					OutputPolicySetting $txt $Policy.ClientPolicy.Session.Performance..ToString()
 				}#>
 
 				$txt = "Session/Experience/Performance/Performance/Themes"
