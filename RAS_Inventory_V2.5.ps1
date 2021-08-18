@@ -32463,7 +32463,6 @@ Function OutputPoliciesDetails
 			{
 				ForEach($GW in $Policy.GWList)
 				{
-					$ScriptInformation.Add(@{Data = ""; Value = $GW; }) > $Null
 					$rowdata += @(,("",($Script:htmlsb),$GW,$htmlwhite))
 				}
 			}
