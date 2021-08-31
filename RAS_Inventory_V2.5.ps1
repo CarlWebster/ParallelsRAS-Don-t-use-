@@ -90,6 +90,26 @@
 	
 	This parameter is disabled by default.
 	This parameter has an alias of SI.
+.PARAMETER ReportFooter
+	Outputs a footer section at the end of the report.
+
+	This parameter has an alias of RF.
+	
+	Report Footer
+		Report information:
+			Created with: <Script Name> - Release Date: <Script Release Date>
+			Script version: <Script Version>
+			Started on <Date Time in Local Format>
+			Elapsed time: nn days, nn hours, nn minutes, nn.nn seconds
+			Ran from domain <Domain Name> by user <Username>
+			Ran from the folder <Folder Name>
+
+	Script Name and Script Release date are script-specific variables.
+	Start Date Time in Local Format is a script variable.
+	Elapsed time is a calulated value.
+	Domain Name is $env:USERDNSDOMAIN.
+	Username is $env:USERNAME.
+	Folder Name is a script variable.
 .PARAMETER MSWord
 	SaveAs DOCX file
 	
@@ -261,9 +281,10 @@
 	Outputs to PDF.
 	Prompts for credentials for the LocalHost RAS Server.
 .EXAMPLE
-	PS C:\PSScript .\RAS_Inventory_V2.5.ps1 -CompanyName "Sherlock Holmes Consulting"
-	-CoverPage Exposure -UserName "Dr. Watson" -CompanyAddress "221B Baker Street, London, 
-	England" -CompanyFax "+44 1753 276600" -CompanyPhone "+44 1753 276200" -MSWord
+	PS C:\PSScript .\RAS_Inventory_V2.5.ps1 -CompanyName "Sherlock Holmes 
+	Consulting" -CoverPage Exposure -UserName "Dr. Watson" -CompanyAddress "221B Baker 
+	Street, London, England" -CompanyFax "+44 1753 276600" -CompanyPhone "+44 1753 276200" 
+	-MSWord
 	
 	Will use:
 		Sherlock Holmes Consulting for the Company Name.
@@ -276,8 +297,9 @@
 	Outputs to Microsoft Word.
 	Prompts for credentials for the LocalHost RAS Server.
 .EXAMPLE
-	PS C:\PSScript .\RAS_Inventory_V2.5.ps1 -CompanyName "Sherlock Holmes Consulting" 
-	-CoverPage Facet -UserName "Dr. Watson" -CompanyEmail SuperSleuth@SherlockHolmes.com
+	PS C:\PSScript .\RAS_Inventory_V2.5.ps1 -CompanyName "Sherlock Holmes 
+	Consulting" -CoverPage Facet -UserName "Dr. Watson" -CompanyEmail 
+	SuperSleuth@SherlockHolmes.com
 	-PDF
 
 	Will use:
@@ -385,9 +407,9 @@
 	text document.
 .NOTES
 	NAME: RAS_Inventory_V2.5.ps1
-	VERSION: 2.50
+	VERSION: 2.51
 	AUTHOR: Carl Webster
-	LASTEDIT: August 12, 2021
+	LASTEDIT: August 31, 2021
 #>
 
 
@@ -427,6 +449,10 @@ Param(
 	[Alias("SI")]
 	[Switch]$ScriptInfo=$False,
 	
+	[parameter(Mandatory=$False)] 
+	[Alias("RF")]
+	[Switch]$ReportFooter=$False,
+
 	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Switch]$MSWord=$False,
 
@@ -493,6 +519,22 @@ Param(
 
 #Version 1.0 released to the community on 5-August-2020
 #Work on 2.0 started on 20-Sep-2020
+#
+#Version 2.51 31-Aug-2021
+#	Add array error checking for non-empty arrays before attempting to create the Word table for most Word tables
+#	Add Function OutputReportFooter
+#	Add Parameter ReportFooter
+#		Outputs a footer section at the end of the report.
+#		Report Footer
+#			Report information:
+#				Created with: <Script Name> - Release Date: <Script Release Date>
+#				Script version: <Script Version>
+#				Started on <Date Time in Local Format>
+#				Elapsed time: nn days, nn hours, nn minutes, nn.nn seconds
+#				Ran from domain <Domain Name> by user <Username>
+#				Ran from the folder <Folder Name>
+#	Update Functions SaveandCloseTextDocument and SaveandCloseHTMLDocument to add a "Report Complete" line
+#	Update Functions ShowScriptOptions and ProcessScriptEnd to add $ReportFooter
 #
 #Version 2.50 12-Aug-2021
 #	Added a version test so the script only works with RAS 18.1
@@ -731,7 +773,11 @@ Set-StrictMode -Version Latest
 
 #force  on
 $PSDefaultParameterValues = @{"*:Verbose"=$True}
-$Script:emailCredentials = $Null
+$Script:emailCredentials  = $Null
+$script:MyVersion         = '2.51'
+$Script:ScriptName        = "RAS_Inventory_V2.5.ps1"
+$tmpdate                  = [datetime] "08/31/2021"
+$Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($MSWord -eq $False -and $PDF -eq $False -and $Text -eq $False -and $HTML -eq $False)
 {
@@ -3353,13 +3399,17 @@ Function SetupText
 Function SaveandCloseTextDocument
 {
 	Write-Verbose "$(Get-Date -Format G): Saving Text file"
-	Write-Output $Script:Output.ToString() | Out-File $Script:TextFileName 4>$Null
+	Line 0 ""
+	Line 0 "Report Complete"
+	Write-Output $global:Output.ToString() | Out-File $Script:TextFileName 4>$Null
 }
 
 Function SaveandCloseHTMLDocument
 {
 	Write-Verbose "$(Get-Date -Format G): Saving HTML file"
-	Out-File -FilePath $Script:HtmlFileName -Append -InputObject "<p></p></body></html>" 4>$Null
+	WriteHTMLLine 0 0 ""
+	WriteHTMLLine 0 0 "Report Complete"
+	Out-File -FilePath $Script:HTMLFileName -Append -InputObject "<p></p></body></html>" 4>$Null
 }
 
 Function SetFilenames
@@ -3381,6 +3431,71 @@ Function SetFilenames
 		SetupHTML
 	}
 	ShowScriptOptions
+}
+
+Function OutputReportFooter
+{
+	#Added in 2.51
+	<#
+	Report Footer
+		Report information:
+			Created with: <Script Name> - Release Date: <Script Release Date>
+			Script version: <Script Version>
+			Started on <Date Time in Local Format>
+			Elapsed time: nn days, nn hours, nn minutes, nn.nn seconds
+			Ran from domain <Domain Name> by user <Username>
+			Ran from the folder <Folder Name>
+
+	Script Name and Script Release date are script-specific variables.
+	Script version is a script variable.
+	Start Date Time in Local Format is a script variable.
+	Domain Name is $env:USERDNSDOMAIN.
+	Username is $env:USERNAME.
+	Folder Name is a script variable.
+	#>
+
+	$runtime = $(Get-Date) - $Script:StartTime
+	$Str = [string]::format("{0} days, {1} hours, {2} minutes, {3}.{4} seconds",
+		$runtime.Days,
+		$runtime.Hours,
+		$runtime.Minutes,
+		$runtime.Seconds,
+		$runtime.Milliseconds)
+
+	If($MSWORD -or $PDF)
+	{
+		$Script:selection.InsertNewPage()
+		WriteWordLine 1 0 "Report Footer"
+		WriteWordLine 2 0 "Report Information:"
+		WriteWordLine 0 1 "Created with: $Script:ScriptName - Release Date: $Script:ReleaseDate"
+		WriteWordLine 0 1 "Script version: $Script:MyVersion"
+		WriteWordLine 0 1 "Started on $Script:StartTime"
+		WriteWordLine 0 1 "Elapsed time: $Str"
+		WriteWordLine 0 1 "Ran from domain $env:USERDNSDOMAIN by user $env:USERNAME"
+		WriteWordLine 0 1 "Ran from the folder $Script:pwdpath"
+	}
+	If($Text)
+	{
+		Line 0 "///  Report Footer  \\\"
+		Line 1 "Report Information:"
+		Line 2 "Created with: $Script:ScriptName - Release Date: $Script:ReleaseDate"
+		Line 2 "Script version: $Script:MyVersion"
+		Line 2 "Started on $Script:StartTime"
+		Line 2 "Elapsed time: $Str"
+		Line 2 "Ran from domain $env:USERDNSDOMAIN by user $env:USERNAME"
+		Line 2 "Ran from the folder $Script:pwdpath"
+	}
+	If($HTML)
+	{
+		WriteHTMLLine 1 0 "///&nbsp;&nbsp;Report Footer&nbsp;&nbsp;\\\"
+		WriteHTMLLine 2 0 "Report Information:"
+		WriteHTMLLine 0 1 "Created with: $Script:ScriptName - Release Date: $Script:ReleaseDate"
+		WriteHTMLLine 0 1 "Script version: $Script:MyVersion"
+		WriteHTMLLine 0 1 "Started on $Script:StartTime"
+		WriteHTMLLine 0 1 "Elapsed time: $Str"
+		WriteHTMLLine 0 1 "Ran from domain $env:USERDNSDOMAIN by user $env:USERNAME"
+		WriteHTMLLine 0 1 "Ran from the folder $Script:pwdpath"
+	}
 }
 
 Function ProcessDocumentOutput
@@ -3523,6 +3638,7 @@ Function ShowScriptOptions
 	Write-Verbose "$(Get-Date -Format G): From                 : $($From)"
 	Write-Verbose "$(Get-Date -Format G): Log                  : $($Log)"
 	Write-Verbose "$(Get-Date -Format G): RAS Version          : $($Script:RASVersion)"
+	Write-Verbose "$(Get-Date -Format G): Report Footer        : $ReportFooter"
 	Write-Verbose "$(Get-Date -Format G): Save As HTML         : $($HTML)"
 	Write-Verbose "$(Get-Date -Format G): Save As PDF          : $($PDF)"
 	Write-Verbose "$(Get-Date -Format G): Save As TEXT         : $($TEXT)"
@@ -3914,71 +4030,72 @@ Function ProcessScriptEnd
 	{
 		$SIFile = "$Script:pwdpath\RASInventoryScriptInfo_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
 		Out-File -FilePath $SIFile -InputObject "" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Add DateTime         : $($AddDateTime)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Add DateTime         : $AddDateTime" 4>$Null
 		If($MSWORD -or $PDF)
 		{
-			Out-File -FilePath $SIFile -Append -InputObject "Company Name         : $($Script:CoName)" 4>$Null		
-			Out-File -FilePath $SIFile -Append -InputObject "Company Address      : $($CompanyAddress)" 4>$Null		
-			Out-File -FilePath $SIFile -Append -InputObject "Company Email        : $($CompanyEmail)" 4>$Null		
-			Out-File -FilePath $SIFile -Append -InputObject "Company Fax          : $($CompanyFax)" 4>$Null		
-			Out-File -FilePath $SIFile -Append -InputObject "Company Phone        : $($CompanyPhone)" 4>$Null		
-			Out-File -FilePath $SIFile -Append -InputObject "Cover Page           : $($CoverPage)" 4>$Null
+			Out-File -FilePath $SIFile -Append -InputObject "Company Name         : $Script:CoName" 4>$Null		
+			Out-File -FilePath $SIFile -Append -InputObject "Company Address      : $CompanyAddress" 4>$Null		
+			Out-File -FilePath $SIFile -Append -InputObject "Company Email        : $CompanyEmail" 4>$Null		
+			Out-File -FilePath $SIFile -Append -InputObject "Company Fax          : $CompanyFax" 4>$Null		
+			Out-File -FilePath $SIFile -Append -InputObject "Company Phone        : $CompanyPhone" 4>$Null		
+			Out-File -FilePath $SIFile -Append -InputObject "Cover Page           : $CoverPage" 4>$Null
 		}
-		Out-File -FilePath $SIFile -Append -InputObject "Dev                  : $($Dev)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Dev                  : $Dev" 4>$Null
 		If($Dev)
 		{
-			Out-File -FilePath $SIFile -Append -InputObject "DevErrorFile         : $($Script:DevErrorFile)" 4>$Null
+			Out-File -FilePath $SIFile -Append -InputObject "DevErrorFile         : $Script:DevErrorFile" 4>$Null
 		}
 		If($MSWord)
 		{
-			Out-File -FilePath $SIFile -Append -InputObject "Word FileName        : $($Script:WordFileName)" 4>$Null
+			Out-File -FilePath $SIFile -Append -InputObject "Word FileName        : $Script:WordFileName" 4>$Null
 		}
 		If($HTML)
 		{
-			Out-File -FilePath $SIFile -Append -InputObject "HTML FileName        : $($Script:HtmlFileName)" 4>$Null
+			Out-File -FilePath $SIFile -Append -InputObject "HTML FileName        : $Script:HtmlFileName" 4>$Null
 		}
 		If($PDF)
 		{
-			Out-File -FilePath $SIFile -Append -InputObject "PDF Filename         : $($Script:PDFFileName)" 4>$Null
+			Out-File -FilePath $SIFile -Append -InputObject "PDF Filename         : $Script:PDFFileName" 4>$Null
 		}
 		If($Text)
 		{
-			Out-File -FilePath $SIFile -Append -InputObject "Text FileName        : $($Script:TextFileName)" 4>$Null
+			Out-File -FilePath $SIFile -Append -InputObject "Text FileName        : $Script:TextFileName" 4>$Null
 		}
-		Out-File -FilePath $SIFile -Append -InputObject "Folder               : $($Folder)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "From                 : $($From)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Log                  : $($Log)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "RAS Version          : $($Script:RASVersion)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Save As HTML         : $($HTML)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Save As PDF          : $($PDF)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Save As TEXT         : $($TEXT)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Save As WORD         : $($MSWORD)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Script Info          : $($ScriptInfo)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Server               : $($Script:ServerName)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Smtp Port            : $($SmtpPort)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Smtp Server          : $($SmtpServer)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Title                : $($Script:Title)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "To                   : $($To)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Use SSL              : $($UseSSL)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "User                 : $($Script:User)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Folder               : $Folder" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "From                 : $From" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Log                  : $Log" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "RAS Version          : $Script:RASVersion" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Report Footer        : $ReportFooter" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Save As HTML         : $HTML" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Save As PDF          : $PDF" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Save As TEXT         : $TEXT" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Save As WORD         : $MSWORD" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Script Info          : $ScriptInfo" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Server               : $Script:ServerName" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Smtp Port            : $SmtpPort" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Smtp Server          : $SmtpServer" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Title                : $Script:Title" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "To                   : $To" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Use SSL              : $UseSSL" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "User                 : $Script:User" 4>$Null
 		If($MSWORD -or $PDF)
 		{
-			Out-File -FilePath $SIFile -Append -InputObject "User Name            : $($UserName)" 4>$Null
+			Out-File -FilePath $SIFile -Append -InputObject "User Name            : $UserName" 4>$Null
 		}
 		Out-File -FilePath $SIFile -Append -InputObject "" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "OS Detected          : $($Script:RunningOS)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "PoSH version         : $($Host.Version)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "PSCulture            : $($PSCulture)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "PSUICulture          : $($PSUICulture)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "RAS Version          : $($Script:RASVersion)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "OS Detected          : $Script:RunningOS" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "PoSH version         : $Host.Version" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "PSCulture            : $PSCulture" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "PSUICulture          : $PSUICulture" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "RAS Version          : $Script:RASVersion" 4>$Null
 		If($MSWORD -or $PDF)
 		{
-			Out-File -FilePath $SIFile -Append -InputObject "Word language        : $($Script:WordLanguageValue)" 4>$Null
-			Out-File -FilePath $SIFile -Append -InputObject "Word version         : $($Script:WordProduct)" 4>$Null
+			Out-File -FilePath $SIFile -Append -InputObject "Word language        : $Script:WordLanguageValue" 4>$Null
+			Out-File -FilePath $SIFile -Append -InputObject "Word version         : $Script:WordProduct" 4>$Null
 		}
 		Out-File -FilePath $SIFile -Append -InputObject "" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Script start         : $($Script:StartTime)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Elapsed time         : $($Str)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Script start         : $Script:StartTime" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Elapsed time         : $Str" 4>$Null
 	}
 
 	#stop transcript logging
@@ -15932,23 +16049,26 @@ Function OutputSite
 						$URLWordTable += $URLTableRowHash;
 					}
 
-					$Table = AddWordTable -Hashtable $URLWordTable `
-					-Columns  URL,Text,Tooltip `
-					-Headers  "URL","Text","Tooltip"`
-					-Format $wdTableGrid `
-					-AutoFit $wdAutoFitFixed;
+					If($URLWordTable.Count -gt 0)
+					{
+						$Table = AddWordTable -Hashtable $URLWordTable `
+						-Columns  URL,Text,Tooltip `
+						-Headers  "URL","Text","Tooltip"`
+						-Format $wdTableGrid `
+						-AutoFit $wdAutoFitFixed;
 
-					SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+						SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-					$Table.Columns.Item(1).Width = 150;
-					$Table.Columns.Item(2).Width = 150;
-					$Table.Columns.Item(3).Width = 150;
+						$Table.Columns.Item(1).Width = 150;
+						$Table.Columns.Item(2).Width = 150;
+						$Table.Columns.Item(3).Width = 150;
 
-					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+						$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
-					FindWordDocumentEnd
-					$Table = $Null
-					WriteWordLine 0 0 ""
+						FindWordDocumentEnd
+						$Table = $Null
+						WriteWordLine 0 0 ""
+					}
 				}
 				Else
 				{
@@ -27298,20 +27418,23 @@ Function OutputPubItemFilters
 				}
 			}
 
-			$Table = AddWordTable -Hashtable $NameTable `
-			-Columns User,Type,SID `
-			-Headers "User", "Type", "SID" `
-			-Format $wdTableGrid `
-			-AutoFit $wdAutoFitContent;
+			If($NameTable.Count -gt 0)
+			{
+				$Table = AddWordTable -Hashtable $NameTable `
+				-Columns User,Type,SID `
+				-Headers "User", "Type", "SID" `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitContent;
 
-			SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
-			FindWordDocumentEnd
-			$Table = $Null
-			WriteWordLine 0 0 ""
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
 
 			$ScriptInformation = New-Object System.Collections.ArrayList
 			$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $PubItem.UserFilterReplicate.ToString(); }) > $Null
@@ -27356,20 +27479,23 @@ Function OutputPubItemFilters
 				}
 			}
 
-			$Table = AddWordTable -Hashtable $NameTable `
-			-Columns Client `
-			-Headers "Client" `
-			-Format $wdTableGrid `
-			-AutoFit $wdAutoFitContent;
+			If($NameTable.Count -gt 0)
+			{
+				$Table = AddWordTable -Hashtable $NameTable `
+				-Columns Client `
+				-Headers "Client" `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitContent;
 
-			SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
-			FindWordDocumentEnd
-			$Table = $Null
-			WriteWordLine 0 0 ""
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
 
 			$ScriptInformation = New-Object System.Collections.ArrayList
 			$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $PubItem.ClientFilterReplicate.ToString(); }) > $Null
@@ -27555,20 +27681,23 @@ Function OutputPubItemFilters
 					}
 				}
 
-				$Table = AddWordTable -Hashtable $NameTable `
-				-Columns IPv4From,IPv4To `
-				-Headers "IPv4 Address From", "IPv4 Address To" `
-				-Format $wdTableGrid `
-				-AutoFit $wdAutoFitContent;
+				If($NameTable.Count -gt 0)
+				{
+					$Table = AddWordTable -Hashtable $NameTable `
+					-Columns IPv4From,IPv4To `
+					-Headers "IPv4 Address From", "IPv4 Address To" `
+					-Format $wdTableGrid `
+					-AutoFit $wdAutoFitContent;
 
-				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-				SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+					SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+					SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
-				FindWordDocumentEnd
-				$Table = $Null
-				WriteWordLine 0 0 ""
+					FindWordDocumentEnd
+					$Table = $Null
+					WriteWordLine 0 0 ""
+				}
 			}
 			
 			If($PubItem.AllowedIP6s.Count -gt 0)
@@ -27594,20 +27723,23 @@ Function OutputPubItemFilters
 					}
 				}
 
-				$Table = AddWordTable -Hashtable $NameTable `
-				-Columns IPv6From,IPv6To `
-				-Headers "IPv6 Address From", "IPv6 Address To" `
-				-Format $wdTableGrid `
-				-AutoFit $wdAutoFitContent;
+				If( $NameTable.Count -gt 0)
+				{
+					$Table = AddWordTable -Hashtable $NameTable `
+					-Columns IPv6From,IPv6To `
+					-Headers "IPv6 Address From", "IPv6 Address To" `
+					-Format $wdTableGrid `
+					-AutoFit $wdAutoFitContent;
 
-				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-				SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+					SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+					SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
-				FindWordDocumentEnd
-				$Table = $Null
-				WriteWordLine 0 0 ""
+					FindWordDocumentEnd
+					$Table = $Null
+					WriteWordLine 0 0 ""
+				}
 			}
 
 			$ScriptInformation = New-Object System.Collections.ArrayList
@@ -27653,20 +27785,23 @@ Function OutputPubItemFilters
 				}
 			}
 
-			$Table = AddWordTable -Hashtable $NameTable `
-			-Columns MAC `
-			-Headers "MAC" `
-			-Format $wdTableGrid `
-			-AutoFit $wdAutoFitContent;
+			If($NameTable.Count -gt 0)
+			{
+				$Table = AddWordTable -Hashtable $NameTable `
+				-Columns MAC `
+				-Headers "MAC" `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitContent;
 
-			SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
-			FindWordDocumentEnd
-			$Table = $Null
-			WriteWordLine 0 0 ""
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
 
 			$ScriptInformation = New-Object System.Collections.ArrayList
 			$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $PubItem.MACFilterReplicate.ToString(); }) > $Null
@@ -27711,21 +27846,24 @@ Function OutputPubItemFilters
 				}
 			}
 
-			$Table = AddWordTable -Hashtable $NameTable `
-			-Columns GW `
-			-Headers "Gateways" `
-			-Format $wdTableGrid `
-			-AutoFit $wdAutoFitContent;
+			If($NameTable.Count -gt 0)
+			{
+				$Table = AddWordTable -Hashtable $NameTable `
+				-Columns GW `
+				-Headers "Gateways" `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitContent;
 
-			SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
-			FindWordDocumentEnd
-			$Table = $Null
+				FindWordDocumentEnd
+				$Table = $Null
 
-			WriteWordLine 0 0 ""
+				WriteWordLine 0 0 ""
+			}
 		}
 	}
 	If($OutputType -eq "Text")
@@ -28749,24 +28887,27 @@ Function OutputUniversalPrintingSettings
 			}
 		}
 
-		$Table = AddWordTable -Hashtable $ServersInSiteTable `
-		-Columns Server, Type, State `
-		-Headers "Server", "Type", "State" `
-		-Format $wdTableGrid `
-		-AutoFit $wdAutoFitFixed;
+		If($ServersInSiteTable.Count -gt 0)
+		{
+			$Table = AddWordTable -Hashtable $ServersInSiteTable `
+			-Columns Server, Type, State `
+			-Headers "Server", "Type", "State" `
+			-Format $wdTableGrid `
+			-AutoFit $wdAutoFitFixed;
 
-		SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-		SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+			SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-		$Table.Columns.Item(1).Width = 200;
-		$Table.Columns.Item(2).Width = 100;
-		$Table.Columns.Item(3).Width = 100;
-		
-		$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+			$Table.Columns.Item(1).Width = 200;
+			$Table.Columns.Item(2).Width = 100;
+			$Table.Columns.Item(3).Width = 100;
+			
+			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
-		FindWordDocumentEnd
-		$Table = $Null
-		WriteWordLine 0 0 ""
+			FindWordDocumentEnd
+			$Table = $Null
+			WriteWordLine 0 0 ""
+		}
 	}
 	If($Text)
 	{
@@ -28938,22 +29079,25 @@ Function OutputUniversalPrinterDriversSettings
 				$DriverNameTable += @{DriverName = $item}
 			}
 
-			$Table = AddWordTable -Hashtable $DriverNameTable `
-			-Columns DriverName `
-			-Headers "Driver name" `
-			-Format $wdTableGrid `
-			-AutoFit $wdAutoFitFixed;
+			If($DriverNameTable.Count -gt 0)
+			{
+				$Table = AddWordTable -Hashtable $DriverNameTable `
+				-Columns DriverName `
+				-Headers "Driver name" `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
 
-			SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-			$Table.Columns.Item(1).Width = 100;
-			
-			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+				$Table.Columns.Item(1).Width = 100;
+				
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
-			FindWordDocumentEnd
-			$Table = $Null
-			WriteWordLine 0 0 ""
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
 
 			$ScriptInformation = New-Object System.Collections.ArrayList
 			$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $RASPrinterSettings.ReplicatePrinterDrivers.ToString(); }) > $Null
@@ -29543,24 +29687,27 @@ Function OutputUniversalScanningSettings
 			}
 		}
 
-		$Table = AddWordTable -Hashtable $ServersInSiteTable `
-		-Columns Server, Type, State `
-		-Headers "Server", "Type", "State" `
-		-Format $wdTableGrid `
-		-AutoFit $wdAutoFitFixed;
+		If($ServersInSiteTable.Count -gt 0)
+		{
+			$Table = AddWordTable -Hashtable $ServersInSiteTable `
+			-Columns Server, Type, State `
+			-Headers "Server", "Type", "State" `
+			-Format $wdTableGrid `
+			-AutoFit $wdAutoFitFixed;
 
-		SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-		SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+			SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-		$Table.Columns.Item(1).Width = 200;
-		$Table.Columns.Item(2).Width = 100;
-		$Table.Columns.Item(3).Width = 100;
-		
-		$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+			$Table.Columns.Item(1).Width = 200;
+			$Table.Columns.Item(2).Width = 100;
+			$Table.Columns.Item(3).Width = 100;
+			
+			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
-		FindWordDocumentEnd
-		$Table = $Null
-		WriteWordLine 0 0 ""
+			FindWordDocumentEnd
+			$Table = $Null
+			WriteWordLine 0 0 ""
+		}
 	}
 	If($Text)
 	{
@@ -29744,24 +29891,27 @@ Function OutputUniversalScanningSettings
 			}
 		}
 
-		$Table = AddWordTable -Hashtable $ServersInSiteTable `
-		-Columns Server, Type, State `
-		-Headers "Server", "Type", "State" `
-		-Format $wdTableGrid `
-		-AutoFit $wdAutoFitFixed;
+		If($ServersInSiteTable.Count -gt 0)
+		{
+			$Table = AddWordTable -Hashtable $ServersInSiteTable `
+			-Columns Server, Type, State `
+			-Headers "Server", "Type", "State" `
+			-Format $wdTableGrid `
+			-AutoFit $wdAutoFitFixed;
 
-		SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-		SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+			SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-		$Table.Columns.Item(1).Width = 200;
-		$Table.Columns.Item(2).Width = 100;
-		$Table.Columns.Item(3).Width = 100;
-		
-		$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+			$Table.Columns.Item(1).Width = 200;
+			$Table.Columns.Item(2).Width = 100;
+			$Table.Columns.Item(3).Width = 100;
+			
+			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
-		FindWordDocumentEnd
-		$Table = $Null
-		WriteWordLine 0 0 ""
+			FindWordDocumentEnd
+			$Table = $Null
+			WriteWordLine 0 0 ""
+		}
 	}
 	If($Text)
 	{
@@ -31773,24 +31923,27 @@ Function OutputRASAllowedDevicesSetting
 			ClientMinimumBuild = $RASAllowedDevices.MinBuild2XOS
 		}
 
-		$Table = AddWordTable -Hashtable $AllowedDevicesWordTable `
-		-Columns ClientStatus, ClientName, ClientMinimumBuild `
-		-Headers "Enabled", "Clients", "Minimum build" `
-		-Format $wdTableGrid `
-		-AutoFit $wdAutoFitFixed;
+		If($AllowedDevicesWordTable.Count -gt 0)
+		{
+			$Table = AddWordTable -Hashtable $AllowedDevicesWordTable `
+			-Columns ClientStatus, ClientName, ClientMinimumBuild `
+			-Headers "Enabled", "Clients", "Minimum build" `
+			-Format $wdTableGrid `
+			-AutoFit $wdAutoFitFixed;
 
-		SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-		SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+			SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-		$Table.Columns.Item(1).Width = 50;
-		$Table.Columns.Item(2).Width = 125;
-		$Table.Columns.Item(3).Width = 100;
-		
-		$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+			$Table.Columns.Item(1).Width = 50;
+			$Table.Columns.Item(2).Width = 125;
+			$Table.Columns.Item(3).Width = 100;
+			
+			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
-		FindWordDocumentEnd
-		$Table = $Null
-		WriteWordLine 0 0 ""
+			FindWordDocumentEnd
+			$Table = $Null
+			WriteWordLine 0 0 ""
+		}
 
 		$ScriptInformation = New-Object System.Collections.ArrayList
 		$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $RASAllowedDevices.ReplicateSettings.ToString(); }) > $Null
@@ -32280,24 +32433,27 @@ Function OutputPoliciesDetails
 				$NameWordTable += $NameTableRowHash;
 			}
 
-			$Table = AddWordTable -Hashtable $NameWordTable `
-			-Columns  Name,Type,SID `
-			-Headers  "Name","Type","SID"`
-			-Format $wdTableGrid `
-			-AutoFit $wdAutoFitFixed;
+			If($NameWordTable.Count -gt 0)
+			{
+				$Table = AddWordTable -Hashtable $NameWordTable `
+				-Columns  Name,Type,SID `
+				-Headers  "Name","Type","SID"`
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
 
-			SetWordCellFormat -Collection $Table -Size 9 -BackgroundColor $wdColorWhite
-			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+				SetWordCellFormat -Collection $Table -Size 9 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-			$Table.Columns.Item(1).Width = 200;
-			$Table.Columns.Item(2).Width = 50;
-			$Table.Columns.Item(3).Width = 250;
+				$Table.Columns.Item(1).Width = 200;
+				$Table.Columns.Item(2).Width = 50;
+				$Table.Columns.Item(3).Width = 250;
 
-			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
-			FindWordDocumentEnd
-			$Table = $Null
-			WriteWordLine 0 0 ""
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
 		}
 		If($Text)
 		{
@@ -37427,6 +37583,11 @@ If(($MSWORD -or $PDF) -and ($Script:CoverPagesExist))
 	$AbstractTitle = "Parallels RAS Inventory Report"
 	$SubjectTitle = "Parallels RAS Inventory Report"
 	UpdateDocumentProperties $AbstractTitle $SubjectTitle
+}
+
+If($ReportFooter)
+{
+	OutputReportFooter
 }
 
 ProcessDocumentOutput "Regular"
