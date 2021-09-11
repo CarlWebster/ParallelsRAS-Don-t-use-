@@ -409,7 +409,7 @@
 	NAME: RAS_Inventory_V2.5.ps1
 	VERSION: 2.51
 	AUTHOR: Carl Webster
-	LASTEDIT: August 31, 2021
+	LASTEDIT: September 11, 2021
 #>
 
 
@@ -520,10 +520,10 @@ Param(
 #Version 1.0 released to the community on 5-August-2020
 #Work on 2.0 started on 20-Sep-2020
 #
-#Version 2.51 31-Aug-2021
-#	Add array error checking for non-empty arrays before attempting to create the Word table for most Word tables
-#	Add Function OutputReportFooter
-#	Add Parameter ReportFooter
+#Version 2.51 11-Sep-2021
+#	Added array error checking for non-empty arrays before attempting to create the Word table for most Word tables
+#	Added Function OutputReportFooter
+#	Added Parameter ReportFooter
 #		Outputs a footer section at the end of the report.
 #		Report Footer
 #			Report information:
@@ -533,8 +533,10 @@ Param(
 #				Elapsed time: nn days, nn hours, nn minutes, nn.nn seconds
 #				Ran from domain <Domain Name> by user <Username>
 #				Ran from the folder <Folder Name>
-#	Update Functions SaveandCloseTextDocument and SaveandCloseHTMLDocument to add a "Report Complete" line
-#	Update Functions ShowScriptOptions and ProcessScriptEnd to add $ReportFooter
+#	Updated Functions SaveandCloseTextDocument and SaveandCloseHTMLDocument to add a "Report Complete" line
+#	Updated Functions ShowScriptOptions and ProcessScriptEnd to add $ReportFooter
+#	Updated the help text
+#	Updated the ReadMe file
 #
 #Version 2.50 12-Aug-2021
 #	Added a version test so the script only works with RAS 18.1
@@ -776,7 +778,7 @@ $PSDefaultParameterValues = @{"*:Verbose"=$True}
 $Script:emailCredentials  = $Null
 $script:MyVersion         = '2.51'
 $Script:ScriptName        = "RAS_Inventory_V2.5.ps1"
-$tmpdate                  = [datetime] "08/31/2021"
+$tmpdate                  = [datetime] "09/11/2021"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($MSWord -eq $False -and $PDF -eq $False -and $Text -eq $False -and $HTML -eq $False)
